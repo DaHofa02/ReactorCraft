@@ -5,6 +5,8 @@ dependencies {
     localRuntime project(':electricraft')
     // PneumaticCraft in the test runs, for RotaryCraft's optional air compressor and pneumatic engine
     localRuntime "maven.modrinth:pneumaticcraft-repressurized:${pneumaticcraft_version}"
+    // Create in the test runs, for RotaryCraft's optional SU converters
+    localRuntime "maven.modrinth:create:${create_version}"
 }
 
 // Dev-only: the RotaryCraft showcase screenshots (DevShowcase) of the ReactorCraft scene (sh tools/make_showcase.sh reactorcraft tools/showcase_reactorcraft).
