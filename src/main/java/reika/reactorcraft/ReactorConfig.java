@@ -17,6 +17,7 @@ public final class ReactorConfig {
 	public static final ModConfigSpec.IntValue OREDENSITY;
 	public static final ModConfigSpec.IntValue DISCRETE;
 	public static final ModConfigSpec.IntValue TOROIDCHARGE;
+	public static final ModConfigSpec.IntValue STEAMLINECAP;
 	public static final ModConfigSpec.BooleanValue CHUNKLOADING, VERTNEUTRONS, FASTNEUTRONS, VISIBLENEUTRONS;
 	private static final Map<ReactorOres, ModConfigSpec.BooleanValue> ALWAYS_GEN = new EnumMap<>(ReactorOres.class);
 
@@ -26,6 +27,7 @@ public final class ReactorConfig {
 		OREDENSITY = b.comment("Ore Density Percentage (clamped to 50-200)").defineInRange("oreDensity", 100, 0, Integer.MAX_VALUE);
 		DISCRETE = b.comment("Ore Discretization: how much to clump the ore into larger but fewer veins").defineInRange("discrete", 1, 1, Integer.MAX_VALUE);
 		TOROIDCHARGE = b.comment("Toroid Spark Delay: how quickly toroid magnets conduct charge (clamped to 4-20)").defineInRange("toroidCharge", 4, 0, Integer.MAX_VALUE);
+		STEAMLINECAP = b.comment("Steam Line Capacity: the most steam one steam line holds (it takes no more from boilers or other lines)").defineInRange("steamLineCapacity", Integer.MAX_VALUE, 1, Integer.MAX_VALUE);
 		CHUNKLOADING = b.comment("Fission Cores Chunkload When Active").define("chunkloading", true);
 		VERTNEUTRONS = b.comment("Fission Neutrons Can Move Vertically").define("vertNeutrons", false);
 		FASTNEUTRONS = b.comment("Enable Fast and Thermal Neutrons").define("fastNeutrons", false);

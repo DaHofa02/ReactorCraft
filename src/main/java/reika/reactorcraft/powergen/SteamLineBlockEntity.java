@@ -57,7 +57,7 @@ public class SteamLineBlockEntity extends RotaryCraftBlockEntity implements Stea
 
 	private void drawFromBoiler(Level world, BlockPos pos) {
 		if (world.getBlockEntity(pos.below()) instanceof ReactorBoilerBlockEntity te) {
-			if (te.getTicksExisted() > 5 && this.canTakeInWorkingFluid(te.getWorkingFluid())) {
+			if (steam < reika.reactorcraft.ReactorConfig.STEAMLINECAP.get() && te.getTicksExisted() > 5 && this.canTakeInWorkingFluid(te.getWorkingFluid())) {
 				fluid = te.getWorkingFluid();
 				int s = te.removeSteam();
 				steam += s;
@@ -88,8 +88,9 @@ public class SteamLineBlockEntity extends RotaryCraftBlockEntity implements Stea
 
 	private void readPipe(SteamLineBlockEntity te) {
 		int dS = te.steam-steam;
-		if (dS > 0) {
-			int amt = dS/2+1;
+		int room = reika.reactorcraft.ReactorConfig.STEAMLINECAP.get()-steam;
+		if (dS > 0 && room > 0) {
+			int amt = Math.min(room, dS/2+1);
 			float frac = amt/(float)te.steam;
 			steam += amt;
 			te.steam -= amt;
