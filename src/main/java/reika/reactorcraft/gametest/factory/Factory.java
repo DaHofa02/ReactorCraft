@@ -17,25 +17,31 @@ package reika.reactorcraft.gametest.factory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.material.Fluid;
 
 import reika.rotarycraft.content.blockentity.ReservoirBlockEntity;
 import reika.rotarycraft.gametest.SimPlayer;
 import reika.rotarycraft.registry.RotaryBlocks;
+
+import reika.reactorcraft.structure.Blueprints;
 
 public final class Factory {
 
@@ -57,7 +63,7 @@ public final class Factory {
 	/** True for blocks the factory leaves out: liquids (they live in barrels, pipes and tanks) and {@link #NOT_PLACED}. */
 	public static boolean exempt(Block b) {
 		ResourceLocation id = BuiltInRegistries.BLOCK.getKey(b);
-		return b instanceof net.minecraft.world.level.block.LiquidBlock || NOT_PLACED.containsKey(id.toString());
+		return b instanceof LiquidBlock || NOT_PLACED.containsKey(id.toString());
 	}
 
 	/** Every block of the three mods the factory has to contain. */
@@ -151,10 +157,10 @@ public final class Factory {
 			throw new IllegalStateException("no free inventory slot to take "+what);
 		}
 		int into = p.menuSlotOf(free);
-		p.click(slot, 0, net.minecraft.world.inventory.ClickType.PICKUP);
+		p.click(slot, 0, ClickType.PICKUP);
 		for (int i = 0; i < n; i++)
-			p.click(into, 1, net.minecraft.world.inventory.ClickType.PICKUP);
-		p.click(slot, 0, net.minecraft.world.inventory.ClickType.PICKUP);
+			p.click(into, 1, ClickType.PICKUP);
+		p.click(slot, 0, ClickType.PICKUP);
 		p.closeMenu();
 	}
 
@@ -184,16 +190,16 @@ public final class Factory {
 	public static List<ItemStack> placeAndMine(SimPlayer p, BlockPos chest, Block b, BlockPos display, BlockPos spot, Item tool) {
 		Item item = b.asItem();
 		takeExactly(p, chest, item, 2);
-		p.place(display, item, net.minecraft.core.Direction.NORTH);
-		p.place(spot, item, net.minecraft.core.Direction.NORTH);
+		p.place(display, item, Direction.NORTH);
+		p.place(spot, item, Direction.NORTH);
 		return p.mine(spot, tool);
 	}
 
 	/** A ReactorCraft multiblock blueprint (structure/Blueprints) moved to {@code at}. */
 	public static Map<BlockPos, Block> blueprint(String id, BlockPos at) {
-		for (reika.reactorcraft.structure.Blueprints.Blueprint b : reika.reactorcraft.structure.Blueprints.all())
+		for (Blueprints.Blueprint b : Blueprints.all())
 			if (b.id().equals(id)) {
-				Map<BlockPos, Block> m = new java.util.LinkedHashMap<>();
+				Map<BlockPos, Block> m = new LinkedHashMap<>();
 				b.blocks().forEach((k, v) -> m.put(k.offset(at), v));
 				return m;
 			}
@@ -206,8 +212,8 @@ public final class Factory {
 	 * in {@code last} at the end, e.g. the part that completes a multiblock).
 	 */
 	public static void buildFromChests(GameTestHelper h, SimPlayer p, BlockPos chestRow, Map<BlockPos, Block> bp, List<BlockPos> last,
-			net.minecraft.core.Direction look) {
-		Map<Block, Integer> need = new java.util.LinkedHashMap<>();
+			Direction look) {
+		Map<Block, Integer> need = new LinkedHashMap<>();
 		for (Block b : bp.values())
 			need.merge(b, 1, Integer::sum);
 		List<Block> kinds = new ArrayList<>(need.keySet());
@@ -236,14 +242,14 @@ public final class Factory {
 		if (inv < 0)
 			throw new IllegalStateException("the player has no "+exact);
 		int from = p.menuSlotOf(inv);
-		p.click(from, 0, net.minecraft.world.inventory.ClickType.PICKUP);
+		p.click(from, 0, ClickType.PICKUP);
 		if (n >= p.player.containerMenu.getCarried().getCount())
-			p.click(menuSlot, 0, net.minecraft.world.inventory.ClickType.PICKUP);
+			p.click(menuSlot, 0, ClickType.PICKUP);
 		else
 			for (int k = 0; k < n; k++)
-				p.click(menuSlot, 1, net.minecraft.world.inventory.ClickType.PICKUP);
+				p.click(menuSlot, 1, ClickType.PICKUP);
 		if (!p.player.containerMenu.getCarried().isEmpty())
-			p.click(from, 0, net.minecraft.world.inventory.ClickType.PICKUP);
+			p.click(from, 0, ClickType.PICKUP);
 	}
 
 	/** Fails the test unless each of the listed blocks stands somewhere in the box (relative corners). */

@@ -10,10 +10,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.Vec3;
 
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -21,9 +26,11 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import reika.reactorcraft.ReactorCraft;
 import reika.rotarycraft.content.block.CanolaBlock;
 import reika.rotarycraft.content.blockentity.DynamometerBlockEntity;
+import reika.rotarycraft.content.blockentity.engine.EngineBlockEntity;
 import reika.rotarycraft.gametest.SimPlayer;
 import reika.rotarycraft.registry.GearboxTypes;
 import reika.rotarycraft.registry.RotaryBlocks;
+import reika.rotarycraft.registry.RotaryComponents;
 import reika.rotarycraft.registry.RotaryFluids;
 import reika.rotarycraft.registry.RotaryItems;
 
@@ -49,7 +56,7 @@ public class ZoneEngines {
 		BlockPos a = new BlockPos(0, 2, 8), b = new BlockPos(1, 2, 8);
 		//the Magnetizer is not ported yet: the core comes magnetized out of the chest (the factory's only item source)
 		ItemStack core = new ItemStack(RotaryItems.gearPart(GearboxTypes.STEEL, GearboxTypes.GearPart.SHAFTCORE));
-		core.set(reika.rotarycraft.registry.RotaryComponents.MAGNETIZATION.get(), 1000);
+		core.set(RotaryComponents.MAGNETIZATION.get(), 1000);
 		Factory.infiniteChest(h, a, new ItemStack(RotaryBlocks.AC_ENGINE.get()), core, new ItemStack(RotaryItems.UPGRADE_REDSTONE.get()),
 				new ItemStack(RotaryBlocks.DYNAMOMETER.get()), new ItemStack(RotaryBlocks.SPORT_ENGINE.get()), new ItemStack(RotaryBlocks.FUEL_LINE.get()),
 				new ItemStack(RotaryBlocks.PIPE.get()), new ItemStack(Items.REDSTONE), new ItemStack(RotaryBlocks.HYDRO_ENGINE.get()),
@@ -107,7 +114,7 @@ public class ZoneEngines {
 		p.use(new BlockPos(4, 2, 7), Items.BUCKET);
 		//a bucket pours where the player looks: from the south, eye level with the pillar's top block, looking north at it - the source
 		//lands at (2, 6, 6) and falls past the engine's north side
-		pour(h, p, new net.minecraft.world.phys.Vec3(2.5, 6.5, 8.5), 180, 0);
+		pour(h, p, new Vec3(2.5, 6.5, 8.5), 180, 0);
 		h.assertTrue(h.getBlockState(new BlockPos(2, 6, 6)).getFluidState().isSource(), "no waterfall source: "+h.getBlockState(new BlockPos(2, 6, 6))+", hand "+p.player.getMainHandItem());
 
 		// canola
@@ -120,25 +127,25 @@ public class ZoneEngines {
 		p.place(soil, Items.DIRT, Direction.EAST);
 		p.hold(Items.IRON_HOE);
 		p.useOn(soil, Direction.UP);
-		h.assertBlockPresent(net.minecraft.world.level.block.Blocks.FARMLAND, soil);
+		h.assertBlockPresent(Blocks.FARMLAND, soil);
 		// canola needs moist farmland (isFertile, as in the original): water in a hole beside it; farmland only gets wet on a random tick
 		// (about once a minute) - that tick is run here instead of waiting for it
 		BlockPos wet = soil.east().above();
 		Factory.takeExactly(p, a, Items.BUCKET, 1);
 		p.use(new BlockPos(4, 2, 7), Items.BUCKET);
-		pour(h, p, new net.minecraft.world.phys.Vec3(6.5, 4.5, 7.5), 0, 90); //looking straight down onto the floor beside the farmland
+		pour(h, p, new Vec3(6.5, 4.5, 7.5), 0, 90); //looking straight down onto the floor beside the farmland
 		h.assertTrue(h.getBlockState(wet).getFluidState().isSource(), "no water beside the farmland: "+h.getBlockState(wet));
 		h.getBlockState(soil).randomTick(h.getLevel(), h.absolutePos(soil), h.getLevel().random);
-		h.assertTrue(h.getBlockState(soil).getValue(net.minecraft.world.level.block.FarmBlock.MOISTURE) > 0, "farmland still dry");
+		h.assertTrue(h.getBlockState(soil).getValue(FarmBlock.MOISTURE) > 0, "farmland still dry");
 		//scooped back up at once (before it flows), or it would wash the crop away; the farmland stays moist for a while
-		use(h, p, Items.BUCKET, new net.minecraft.world.phys.Vec3(6.5, 4.5, 7.5), 0, 90);
+		use(h, p, Items.BUCKET, new Vec3(6.5, 4.5, 7.5), 0, 90);
 		h.assertTrue(h.getBlockState(wet).isAir(), "water not scooped up: "+h.getBlockState(wet));
 		p.hold(RotaryItems.CANOLA_SEEDS.get());
 		var r = p.useOn(soil, Direction.UP);
 		h.assertTrue(h.getBlockState(soil.above()).is(RotaryBlocks.CANOLA.get()), "seeds not planted: "+r+", above "+h.getBlockState(soil.above())+", hand "+p.player.getMainHandItem());
 		h.assertBlockPresent(RotaryBlocks.CANOLA.get(), soil.above());
 		//bone meal does not work on canola (the original denied the BonemealEvent); it grows on random ticks only
-		h.assertTrue(p.use(soil.above(), Items.BONE_MEAL) != net.minecraft.world.InteractionResult.SUCCESS
+		h.assertTrue(p.use(soil.above(), Items.BONE_MEAL) != InteractionResult.SUCCESS
 				&& h.getBlockState(soil.above()).getValue(CanolaBlock.AGE) == 0, "bone meal made canola grow");
 
 		DynamometerBlockEntity dac = (DynamometerBlockEntity)h.getBlockEntity(ac.west());
@@ -147,7 +154,7 @@ public class ZoneEngines {
 		h.succeedWhen(() -> {
 			h.assertTrue(dac.omega == 256 && dac.torque == 512, "AC engine: "+dac.omega+" rad/s @ "+dac.torque+" Nm");
 			h.assertTrue(dsp.omega == 1024 && dsp.torque == 256, "sport engine: "+dsp.omega+" rad/s @ "+dsp.torque+" Nm");
-			h.assertTrue(dhy.omega > 0 && dhy.torque > 0, "hydro engine: "+dhy.omega+" rad/s @ "+dhy.torque+" Nm; north of it "+h.getBlockState(hydro.north())+", lube "+((reika.rotarycraft.content.blockentity.engine.EngineBlockEntity)h.getBlockEntity(hydro)).getLube()+", meta "+((reika.rotarycraft.content.blockentity.engine.EngineBlockEntity)h.getBlockEntity(hydro)).getBlockMetadata());
+			h.assertTrue(dhy.omega > 0 && dhy.torque > 0, "hydro engine: "+dhy.omega+" rad/s @ "+dhy.torque+" Nm; north of it "+h.getBlockState(hydro.north())+", lube "+((EngineBlockEntity)h.getBlockEntity(hydro)).getLube()+", meta "+((EngineBlockEntity)h.getBlockEntity(hydro)).getBlockMetadata());
 			h.assertBlockPresent(RotaryBlocks.CANOLA.get(), soil.above());
 			Factory.assertBuilt(h, BLOCKS, new BlockPos(0, 2, 0), new BlockPos(8, 3, 8));
 			p.leave();
@@ -155,13 +162,13 @@ public class ZoneEngines {
 	}
 
 	/** Pours the held water bucket the way a player does: from that eye position (relative), looking yaw/pitch, right-clicking. */
-	private static void pour(GameTestHelper h, SimPlayer p, net.minecraft.world.phys.Vec3 eye, float yaw, float pitch) {
+	private static void pour(GameTestHelper h, SimPlayer p, Vec3 eye, float yaw, float pitch) {
 		use(h, p, Items.WATER_BUCKET, eye, yaw, pitch);
 	}
 
 	/** Uses the held item into the air the way a player does: from that eye position (relative), looking yaw/pitch. */
-	private static void use(GameTestHelper h, SimPlayer p, net.minecraft.world.item.Item item, net.minecraft.world.phys.Vec3 eye, float yaw, float pitch) {
-		net.minecraft.world.phys.Vec3 a = net.minecraft.world.phys.Vec3.atLowerCornerOf(h.absolutePos(BlockPos.ZERO)).add(eye);
+	private static void use(GameTestHelper h, SimPlayer p, Item item, Vec3 eye, float yaw, float pitch) {
+		Vec3 a = Vec3.atLowerCornerOf(h.absolutePos(BlockPos.ZERO)).add(eye);
 		p.hold(item);
 		p.player.moveTo(a.x, a.y-p.player.getEyeHeight(), a.z, yaw, pitch);
 		p.player.setYHeadRot(yaw);

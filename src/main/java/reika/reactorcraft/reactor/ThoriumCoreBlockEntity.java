@@ -21,6 +21,7 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import reika.reactorcraft.content.entity.NeutronEntity;
 import reika.reactorcraft.registry.ReactorBlockEntities;
 import reika.reactorcraft.registry.ReactorFluids;
+import reika.reactorcraft.waste.WastePipeBlockEntity;
 import reika.rotarycraft.content.piping.PipeConnector;
 import reika.rotarycraft.content.piping.PipeType;
 import reika.rotarycraft.lib.math.RandomHelper;
@@ -267,7 +268,7 @@ public class ThoriumCoreBlockEntity extends NuclearCoreBlockEntity implements Pi
 	}
 
 	private boolean isWastePipe(@Nullable Direction from) {
-		return from != null && level != null && level.getBlockEntity(worldPosition.relative(from)) instanceof reika.reactorcraft.waste.WastePipeBlockEntity;
+		return from != null && level != null && level.getBlockEntity(worldPosition.relative(from)) instanceof WastePipeBlockEntity;
 	}
 
 	@Override

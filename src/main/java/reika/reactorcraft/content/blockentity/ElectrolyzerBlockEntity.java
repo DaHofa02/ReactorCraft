@@ -17,6 +17,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.Clearable;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -47,7 +49,7 @@ import reika.rotarycraft.lib.world.AmbientTemperature;
  * (two when far off) towards the surroundings (halved next to water, quartered by ice, which melts; +200 by fire, +600 by lava; snow and
  * ice melt above 100 C), up to 1200 C; friction heaters heat it at half rate.
  */
-public class ElectrolyzerBlockEntity extends RotaryCraftBlockEntity implements PipeConnector, FrictionHeatable, Shockable, net.minecraft.world.Clearable {
+public class ElectrolyzerBlockEntity extends RotaryCraftBlockEntity implements PipeConnector, FrictionHeatable, Shockable, Clearable {
 
 	public static final int SODIUM_MELT = 98;
 	public static final int SALT_MELT = 801;
@@ -497,7 +499,7 @@ public class ElectrolyzerBlockEntity extends RotaryCraftBlockEntity implements P
 
 	@Override
 	public void onBlockBroken(Level world, BlockPos pos) {
-		net.minecraft.world.Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), inv.getStackInSlot(0).copy());
+		Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), inv.getStackInSlot(0).copy());
 	}
 
 	@Override

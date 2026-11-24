@@ -12,6 +12,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -67,7 +68,7 @@ public class ZonePurifier {
 		h.succeedWhen(() -> {
 			h.assertTrue(te.converted >= 1, "converted "+te.converted+" at "+te.temperature+" C, "+te.getPower()+" W");
 			Factory.assertBuilt(h, BLOCKS, new BlockPos(0, 2, 0), new BlockPos(8, 3, 8));
-			h.setBlock(lava, net.minecraft.world.level.block.Blocks.STONE);
+			h.setBlock(lava, Blocks.STONE);
 			PurifierBlockEntity.TEST_STEELS.remove(Items.NETHERITE_SCRAP);
 			p.leave();
 		});

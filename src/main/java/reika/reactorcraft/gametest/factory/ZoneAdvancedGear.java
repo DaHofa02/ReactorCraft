@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -18,6 +19,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import reika.reactorcraft.ReactorCraft;
 import reika.rotarycraft.content.blockentity.AdvancedGearBlockEntity;
+import reika.rotarycraft.content.item.CraftingPart;
 import reika.rotarycraft.gametest.SimPlayer;
 import reika.rotarycraft.registry.RotaryBlocks;
 import reika.rotarycraft.registry.RotaryFluids;
@@ -143,8 +145,8 @@ public class ZoneAdvancedGear {
 		SimPlayer.floor(h, 0, 0, 8, 8);
 		SimPlayer p = new SimPlayer(h, GameType.SURVIVAL);
 		BlockPos chest = new BlockPos(0, 2, 8);
-		net.minecraft.world.item.Item belt = RotaryItems.part(reika.rotarycraft.content.item.CraftingPart.BELT);
-		net.minecraft.world.item.Item lube = RotaryFluids.LUBRICANT.get().getBucket();
+		Item belt = RotaryItems.part(CraftingPart.BELT);
+		Item lube = RotaryFluids.LUBRICANT.get().getBucket();
 		Factory.infiniteChest(h, chest, new ItemStack(RotaryBlocks.FUEL_LINE.get()), new ItemStack(RotaryBlocks.GAS_ENGINE.get()),
 				new ItemStack(RotaryBlocks.CVT.get()), new ItemStack(Items.DIRT), new ItemStack(belt), new ItemStack(lube));
 		Factory.fluidBarrel(h, new BlockPos(8, 3, 5), RotaryFluids.ETHANOL.get());

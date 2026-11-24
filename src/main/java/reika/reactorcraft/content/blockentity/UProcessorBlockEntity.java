@@ -15,6 +15,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.Clearable;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -46,7 +48,7 @@ import reika.rotarycraft.content.piping.PipeType;
  * fluid containers into the input tank. Three 3000 mB tanks; pipes fill the input from every side but the front and take the product
  * from the front; items can be inserted from any side but not taken out.
  */
-public class UProcessorBlockEntity extends RotaryCraftBlockEntity implements PipeConnector, net.minecraft.world.Clearable {
+public class UProcessorBlockEntity extends RotaryCraftBlockEntity implements PipeConnector, Clearable {
 
 	public static final int CAPACITY = 3000;
 
@@ -239,7 +241,7 @@ public class UProcessorBlockEntity extends RotaryCraftBlockEntity implements Pip
 	@Override
 	public void onBlockBroken(Level world, BlockPos pos) {
 		for (int i = 0; i < inv.getSlots(); i++)
-			net.minecraft.world.Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), inv.getStackInSlot(i).copy());
+			Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), inv.getStackInSlot(i).copy());
 	}
 
 	@Override

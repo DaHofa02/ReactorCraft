@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.Clearable;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -35,7 +36,7 @@ import reika.rotarycraft.lib.math.RandomHelper;
  * decays into its product (the next heavier isotope x1, two heavier x0.5, otherwise a lighter one; lead products - no lead without other
  * mods - are not created). Its temperature follows the surroundings only (it is not a temperatured reactor part in the original, so neighbours lose heat to it without warming it). Sides show the column position, top and bottom #4.
  */
-public class WasteDecayerBlockEntity extends ReactorBlockEntity implements NeutronTile, ReactorBlock, net.minecraft.world.Clearable {
+public class WasteDecayerBlockEntity extends ReactorBlockEntity implements NeutronTile, ReactorBlock, Clearable {
 
 	public static final int BASE_TEMP = 150;
 	public static final int OPTIMAL_TEMP = 400;

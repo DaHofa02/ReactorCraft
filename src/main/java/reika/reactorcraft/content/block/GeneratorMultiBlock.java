@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
 
 import reika.reactorcraft.powergen.ReactorGeneratorBlockEntity;
 
@@ -223,7 +224,7 @@ public class GeneratorMultiBlock extends Block {
 	}
 
 	@Override
-	protected List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
+	protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
 		return List.of(new ItemStack(this));
 	}
 }

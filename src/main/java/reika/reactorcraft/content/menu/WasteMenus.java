@@ -14,11 +14,15 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
+import reika.reactorcraft.reactor.PebbleBedBlockEntity;
 import reika.reactorcraft.registry.ReactorMenus;
 import reika.reactorcraft.waste.WasteContainerBlockEntity;
 import reika.reactorcraft.waste.WasteDecayerBlockEntity;
 import reika.reactorcraft.waste.WasteStorageBlockEntity;
 import reika.rotarycraft.content.blockentity.RotaryCraftBlockEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Original: ContainerWasteContainer (9x3 at 8+18k, 22+18i), ContainerWasteStorage (12 SlotNuclearWaste in a diamond) and
@@ -110,19 +114,19 @@ public final class WasteMenus {
 	public static class PebbleBed extends Base {
 		private static int[][] slots() {
 			int[] num = {11, 11, 9, 7, 5, 3, 1};
-			java.util.List<int[]> li = new java.util.ArrayList<>();
+			List<int[]> li = new ArrayList<>();
 			for (int f = 0; f < num.length; f++)
 				for (int i = 0; i < num[f]; i++)
 					li.add(new int[]{21+18*i+18*(11-num[f])/2, 25+18*f});
 			return li.toArray(new int[0][]);
 		}
 
-		public PebbleBed(int id, Inventory inv, reika.reactorcraft.reactor.PebbleBedBlockEntity te) {
+		public PebbleBed(int id, Inventory inv, PebbleBedBlockEntity te) {
 			super(ReactorMenus.PEBBLE_BED.get(), id, inv, te, te.getInventory(), slots(), 31, 77, 73);
 		}
 
 		public static PebbleBed fromNetwork(int id, Inventory inv, RegistryFriendlyByteBuf buf) {
-			return new PebbleBed(id, inv, (reika.reactorcraft.reactor.PebbleBedBlockEntity)inv.player.level().getBlockEntity(buf.readBlockPos()));
+			return new PebbleBed(id, inv, (PebbleBedBlockEntity)inv.player.level().getBlockEntity(buf.readBlockPos()));
 		}
 	}
 

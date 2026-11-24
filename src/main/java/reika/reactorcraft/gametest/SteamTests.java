@@ -9,6 +9,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluids;
 
@@ -19,12 +22,23 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import reika.reactorcraft.ReactorCraft;
 import reika.reactorcraft.content.block.SteamBlock;
+import reika.reactorcraft.content.block.TurbineMultiBlock;
+import reika.reactorcraft.powergen.CondenserBlockEntity;
+import reika.reactorcraft.powergen.HiPTurbineBlockEntity;
+import reika.reactorcraft.powergen.SteamDiffuserBlockEntity;
 import reika.reactorcraft.powergen.SteamGrateBlockEntity;
+import reika.reactorcraft.powergen.SteamInjectorBlockEntity;
 import reika.reactorcraft.powergen.SteamLineBlockEntity;
 import reika.reactorcraft.powergen.TurbineCoreBlockEntity;
 import reika.reactorcraft.powergen.WorkingFluid;
 import reika.reactorcraft.reactor.ReactorBoilerBlockEntity;
 import reika.reactorcraft.registry.ReactorBlocks;
+import reika.reactorcraft.registry.ReactorFluids;
+
+import reika.rotarycraft.content.blockentity.RotaryCraftBlockEntity;
+import reika.rotarycraft.content.blockentity.engine.EngineBlockEntity;
+import reika.rotarycraft.registry.RotaryBlocks;
+import reika.rotarycraft.registry.RotaryFluids;
 
 @GameTestHolder(ReactorCraft.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -59,7 +73,7 @@ public class SteamTests {
 		h.runAtTickTime(40, () -> {
 			h.assertTrue(line.getSteam() > 0 && line.getWorkingFluid() == WorkingFluid.WATER, "line: "+line.getSteam()+" "+line.getWorkingFluid());
 			h.assertTrue(b.getTank().getFluidAmount() < 6000 && b.getTank().getFluidAmount()%200 == 0, "boiler tank "+b.getTank().getFluidAmount());
-			h.assertTrue(h.getBlockState(new BlockPos(4, 2, 4)).getValue(net.minecraft.world.level.block.PipeBlock.DOWN), "line not connected to the boiler");
+			h.assertTrue(h.getBlockState(new BlockPos(4, 2, 4)).getValue(PipeBlock.DOWN), "line not connected to the boiler");
 			h.succeed();
 		});
 	}
@@ -132,7 +146,7 @@ public class SteamTests {
 		TurbineCoreBlockEntity t = (TurbineCoreBlockEntity)h.getBlockEntity(new BlockPos(7, 5, 4));
 		t.setBlockMetadata(0);
 		t.addLubricant(10000);
-		h.setBlock(new BlockPos(7, 6, 5), net.minecraft.world.level.block.Blocks.STONE);
+		h.setBlock(new BlockPos(7, 6, 5), Blocks.STONE);
 		h.runAtTickTime(150, () -> {
 			h.assertTrue(t.getRawOmega() == 0, "jammed turbine spins at "+t.getRawOmega());
 			h.succeed();
@@ -146,12 +160,12 @@ public class SteamTests {
 		h.setBlock(new BlockPos(3, 2, 4), ReactorBlocks.STEAM.get().defaultBlockState().setValue(SteamBlock.FLAGS, 3));
 		h.setBlock(new BlockPos(5, 3, 4), ReactorBlocks.CONDENSER.get());
 		h.setBlock(new BlockPos(5, 2, 4), ReactorBlocks.STEAM.get().defaultBlockState().setValue(SteamBlock.FLAGS, 7));
-		var a = (reika.reactorcraft.powergen.CondenserBlockEntity)h.getBlockEntity(new BlockPos(3, 3, 4));
-		var b = (reika.reactorcraft.powergen.CondenserBlockEntity)h.getBlockEntity(new BlockPos(5, 3, 4));
+		var a = (CondenserBlockEntity)h.getBlockEntity(new BlockPos(3, 3, 4));
+		var b = (CondenserBlockEntity)h.getBlockEntity(new BlockPos(5, 3, 4));
 		h.succeedWhen(() -> {
-			h.assertTrue(a.getTank().getFluidAmount() == 200 && a.getTank().getFluid().getFluid().isSame(reika.reactorcraft.registry.ReactorFluids.get("low_pressure_water")),
+			h.assertTrue(a.getTank().getFluidAmount() == 200 && a.getTank().getFluid().getFluid().isSame(ReactorFluids.get("low_pressure_water")),
 					"water condenser: "+a.getTank().getFluidAmount());
-			h.assertTrue(b.getTank().getFluidAmount() == 200 && b.getTank().getFluid().getFluid().isSame(reika.reactorcraft.registry.ReactorFluids.get("low_pressure_ammonia")),
+			h.assertTrue(b.getTank().getFluidAmount() == 200 && b.getTank().getFluid().getFluid().isSame(ReactorFluids.get("low_pressure_ammonia")),
 					"ammonia condenser: "+b.getTank().getFluidAmount());
 			h.assertBlockNotPresent(ReactorBlocks.STEAM.get(), new BlockPos(3, 2, 4));
 		});
@@ -161,14 +175,14 @@ public class SteamTests {
 	@GameTest(template = PLATFORM)
 	public static void condenserRecipeLoaded(GameTestHelper h) {
 		var rm = h.getLevel().getRecipeManager();
-		h.assertTrue(rm.byKey(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "condenser_worktable")).isPresent(),
+		h.assertTrue(rm.byKey(ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "condenser_worktable")).isPresent(),
 				"condenser worktable recipe missing");
 		h.succeed();
 	}
 
 	/** Builds the blueprint slice for the given index at axial position x (slices lie in the y/z plane), centre (x, cy, cz). */
 	private static void buildSlice(GameTestHelper h, int slice, int x, int cy, int cz) {
-		String[] rows = reika.reactorcraft.content.block.TurbineMultiBlock.SLICES[slice];
+		String[] rows = TurbineMultiBlock.SLICES[slice];
 		for (int i = 0; i < rows[0].length(); i++)
 			for (int k = 0; k < rows.length; k++) {
 				char c = rows[k].charAt(i);
@@ -187,7 +201,7 @@ public class SteamTests {
 	public static void hipTurbineMultiblock(GameTestHelper h) {
 		int cy = 4, cz = 4;
 		h.setBlock(new BlockPos(3, cy, cz), ReactorBlocks.HIP_TURBINE.get());
-		var core = (reika.reactorcraft.powergen.HiPTurbineBlockEntity)h.getBlockEntity(new BlockPos(3, cy, cz));
+		var core = (HiPTurbineBlockEntity)h.getBlockEntity(new BlockPos(3, cy, cz));
 		core.setBlockMetadata(0); //steam moves west, the inlet is east
 		buildSlice(h, 6, 3, cy, cz);
 		buildSlice(h, 7, 4, cy, cz);
@@ -200,21 +214,21 @@ public class SteamTests {
 		src.putDouble("FISSION", 100000);
 		t.put("sources", src);
 		line.loadWithComponents(t, h.getLevel().registryAccess());
-		var inj = (reika.reactorcraft.powergen.SteamInjectorBlockEntity)h.getBlockEntity(new BlockPos(4, cy+1, cz));
-		inj.fill(Direction.UP, new FluidStack(reika.rotarycraft.registry.RotaryFluids.LUBRICANT.get(), 1000), IFluidHandler.FluidAction.EXECUTE);
+		var inj = (SteamInjectorBlockEntity)h.getBlockEntity(new BlockPos(4, cy+1, cz));
+		inj.fill(Direction.UP, new FluidStack(RotaryFluids.LUBRICANT.get(), 1000), IFluidHandler.FluidAction.EXECUTE);
 		BlockPos any = h.absolutePos(new BlockPos(3, cy+2, cz));
-		h.assertTrue(reika.reactorcraft.content.block.TurbineMultiBlock.checkForFullMultiBlock(h.getLevel(), any, Direction.EAST), "blueprint does not match");
-		reika.reactorcraft.content.block.TurbineMultiBlock.onCreateFullMultiBlock(h.getLevel(), any);
-		h.assertTrue(core.hasMultiBlock() && h.getBlockState(new BlockPos(3, cy+2, cz)).getValue(reika.reactorcraft.content.block.TurbineMultiBlock.FORMED), "not formed");
+		h.assertTrue(TurbineMultiBlock.checkForFullMultiBlock(h.getLevel(), any, Direction.EAST), "blueprint does not match");
+		TurbineMultiBlock.onCreateFullMultiBlock(h.getLevel(), any);
+		h.assertTrue(core.hasMultiBlock() && h.getBlockState(new BlockPos(3, cy+2, cz)).getValue(TurbineMultiBlock.FORMED), "not formed");
 		h.runAtTickTime(300, () -> {
 			h.assertTrue(core.getRawOmega() > 0 && core.getSteam() > 0 && core.getNumberStagesTotal() == 1,
 					"turbine: "+core.getRawOmega()+" rad/s, steam "+core.getSteam()+", lube "+core.getLubricant());
 			int speed = core.getRawOmega();
-			h.setBlock(new BlockPos(3, cy+2, cz), net.minecraft.world.level.block.Blocks.AIR);
+			h.setBlock(new BlockPos(3, cy+2, cz), Blocks.AIR);
 			if (speed > 2048) //original: losing the multiblock at speed blows the core apart
 				h.assertBlockNotPresent(ReactorBlocks.HIP_TURBINE.get(), new BlockPos(3, cy, cz));
 			else
-				h.assertTrue(!core.hasMultiBlock() && !h.getBlockState(new BlockPos(3, cy-2, cz)).getValue(reika.reactorcraft.content.block.TurbineMultiBlock.FORMED), "still formed");
+				h.assertTrue(!core.hasMultiBlock() && !h.getBlockState(new BlockPos(3, cy-2, cz)).getValue(TurbineMultiBlock.FORMED), "still formed");
 			h.succeed();
 		});
 	}
@@ -226,10 +240,10 @@ public class SteamTests {
 		h.setBlock(new BlockPos(5, 1, 4), ReactorBlocks.STEAM_LINE.get());
 		SteamLineBlockEntity dst = (SteamLineBlockEntity)h.getBlockEntity(new BlockPos(3, 1, 4));
 		SteamLineBlockEntity src = (SteamLineBlockEntity)h.getBlockEntity(new BlockPos(5, 1, 4));
-		h.setBlock(new BlockPos(4, 1, 4), reika.rotarycraft.registry.RotaryBlocks.PIPE_PUMP.get());
-		((reika.rotarycraft.content.blockentity.RotaryCraftBlockEntity)h.getBlockEntity(new BlockPos(4, 1, 4))).setBlockMetadata(0);
-		h.setBlock(new BlockPos(4, 1, 5), reika.rotarycraft.registry.RotaryBlocks.MICRO_ENGINE.get());
-		var eng = (reika.rotarycraft.content.blockentity.engine.EngineBlockEntity)h.getBlockEntity(new BlockPos(4, 1, 5));
+		h.setBlock(new BlockPos(4, 1, 4), RotaryBlocks.PIPE_PUMP.get());
+		((RotaryCraftBlockEntity)h.getBlockEntity(new BlockPos(4, 1, 4))).setBlockMetadata(0);
+		h.setBlock(new BlockPos(4, 1, 5), RotaryBlocks.MICRO_ENGINE.get());
+		var eng = (EngineBlockEntity)h.getBlockEntity(new BlockPos(4, 1, 5));
 		eng.setBlockMetadata(2);
 		eng.addFuel(50000);
 		h.onEachTick(() -> giveSteam(h, src, 5000));
@@ -241,15 +255,15 @@ public class SteamTests {
 	public static void lineConnectsToHiPTurbineAndDiffuser(GameTestHelper h) {
 		h.setBlock(new BlockPos(3, 1, 4), ReactorBlocks.HIP_TURBINE.get());
 		h.setBlock(new BlockPos(5, 1, 4), ReactorBlocks.STEAM_DIFFUSER.get());
-		((reika.reactorcraft.powergen.SteamDiffuserBlockEntity)h.getBlockEntity(new BlockPos(5, 1, 4))).setBlockMetadata(0); //facing west, to the line
+		((SteamDiffuserBlockEntity)h.getBlockEntity(new BlockPos(5, 1, 4))).setBlockMetadata(0); //facing west, to the line
 		h.setBlock(new BlockPos(5, 1, 2), ReactorBlocks.STEAM_DIFFUSER.get());
-		((reika.reactorcraft.powergen.SteamDiffuserBlockEntity)h.getBlockEntity(new BlockPos(5, 1, 2))).setBlockMetadata(1); //facing east, away
+		((SteamDiffuserBlockEntity)h.getBlockEntity(new BlockPos(5, 1, 2))).setBlockMetadata(1); //facing east, away
 		h.setBlock(new BlockPos(4, 1, 4), ReactorBlocks.STEAM_LINE.get());
 		h.setBlock(new BlockPos(4, 1, 2), ReactorBlocks.STEAM_LINE.get());
 		var a = h.getBlockState(new BlockPos(4, 1, 4));
-		h.assertTrue(a.getValue(net.minecraft.world.level.block.PipeBlock.WEST), "line not connected to the HiP turbine");
-		h.assertTrue(a.getValue(net.minecraft.world.level.block.PipeBlock.EAST), "line not connected to the diffuser facing it");
-		h.assertTrue(!h.getBlockState(new BlockPos(4, 1, 2)).getValue(net.minecraft.world.level.block.PipeBlock.EAST), "line connected to a diffuser facing away");
+		h.assertTrue(a.getValue(PipeBlock.WEST), "line not connected to the HiP turbine");
+		h.assertTrue(a.getValue(PipeBlock.EAST), "line not connected to the diffuser facing it");
+		h.assertTrue(!h.getBlockState(new BlockPos(4, 1, 2)).getValue(PipeBlock.EAST), "line connected to a diffuser facing away");
 		h.succeed();
 	}
 }

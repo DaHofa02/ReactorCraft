@@ -9,6 +9,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -20,6 +21,7 @@ import reika.reactorcraft.radiation.Isotopes;
 import reika.reactorcraft.radiation.RadiationEffects;
 import reika.reactorcraft.radiation.RadiationIntensity;
 import reika.reactorcraft.registry.ReactorBlockEntities;
+import reika.rotarycraft.content.blockentity.HeatConduction;
 import reika.rotarycraft.lib.world.AmbientTemperature;
 
 /**
@@ -28,7 +30,7 @@ import reika.rotarycraft.lib.world.AmbientTemperature;
  * else turns into flowing water); smoke and fizzing above 150/300 C; above 600 C it melts down (explosion 9, lethal contamination
  * radius 9). It leaks waste neutrons. Only long-lived waste (none, since it only takes short-lived waste) can be taken out by machines.
  */
-public class WasteContainerBlockEntity extends WasteUnitBlockEntity implements reika.rotarycraft.content.blockentity.HeatConduction {
+public class WasteContainerBlockEntity extends WasteUnitBlockEntity implements HeatConduction {
 
 	public static final int WIDTH = 9;
 	public static final int HEIGHT = 3;
@@ -66,7 +68,7 @@ public class WasteContainerBlockEntity extends WasteUnitBlockEntity implements r
 			for (Direction side : Direction.values()) {
 				BlockPos p = pos.relative(side);
 				BlockState s = world.getBlockState(p);
-				if (s.getFluidState().isSource() && s.getFluidState().is(net.minecraft.tags.FluidTags.WATER) && s.getBlock() instanceof LiquidBlock) {
+				if (s.getFluidState().isSource() && s.getFluidState().is(FluidTags.WATER) && s.getBlock() instanceof LiquidBlock) {
 					temperature -= WATER_COOLING;
 					if (!world.isClientSide) {
 						if (temperature > 100)

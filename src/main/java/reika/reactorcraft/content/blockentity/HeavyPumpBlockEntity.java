@@ -24,6 +24,7 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import reika.reactorcraft.registry.ReactorBlockEntities;
 import reika.reactorcraft.registry.ReactorFluids;
+import reika.rotarycraft.api.power.PowerTransferHelper;
 import reika.rotarycraft.api.power.ShaftPowerReceiver;
 import reika.rotarycraft.content.blockentity.RotaryCraftBlockEntity;
 import reika.rotarycraft.content.piping.PipeConnector;
@@ -73,7 +74,7 @@ public class HeavyPumpBlockEntity extends RotaryCraftBlockEntity implements Shaf
 	protected void updateEntity(Level world, BlockPos pos, BlockState state) {
 		if (world.isClientSide)
 			return;
-		if (!reika.rotarycraft.api.power.PowerTransferHelper.checkPowerFrom(this, Direction.DOWN) && !reika.rotarycraft.api.power.PowerTransferHelper.checkPowerFrom(this, Direction.UP))
+		if (!PowerTransferHelper.checkPowerFrom(this, Direction.DOWN) && !PowerTransferHelper.checkPowerFrom(this, Direction.UP))
 			this.noInputMachine();
 		if (power >= MINPOWER && torque >= MINTORQUE) {
 			int cap = Math.max(1, 20-2*(int)ReikaMathLibrary.logbase(omega, 2));

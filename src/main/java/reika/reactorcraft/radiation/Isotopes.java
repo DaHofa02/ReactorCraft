@@ -6,6 +6,13 @@ package reika.reactorcraft.radiation;
 import reika.rotarycraft.lib.math.ReikaEngLibrary;
 import reika.rotarycraft.lib.math.ReikaMathLibrary;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
+
 /** Original: Reika.DragonAPI.Libraries.MathSci.Isotopes (name, half-life, element group; the order is the waste item's id). */
 public enum Isotopes {
 
@@ -103,14 +110,14 @@ public enum Isotopes {
 	}
 
 	/** What an isotope decays into in the waste decayer: one of these isotopes or lead (Pb, isotope null). */
-	public record DecayProduct(@javax.annotation.Nullable Isotopes isotope, String symbol, int weight) {}
+	public record DecayProduct(@Nullable Isotopes isotope, String symbol, int weight) {}
 
 	public record DecayData(DecayProduct product, double amount) {}
 
-	private static final java.util.Map<Isotopes, DecayData> DECAY = new java.util.EnumMap<>(Isotopes.class);
+	private static final Map<Isotopes, DecayData> DECAY = new EnumMap<>(Isotopes.class);
 
 	/** Original Isotopes.getDecay (computeDecayData); null = it decays into nothing. */
-	@javax.annotation.Nullable
+	@Nullable
 	public DecayData getDecay() {
 		if (DECAY.isEmpty()) {
 			for (Isotopes i : isoList)
@@ -120,9 +127,9 @@ public enum Isotopes {
 	}
 
 	/** Original computeDecayData: the element one heavier (x1), else two heavier (x0.5), else the heaviest at least 3 lighter (weight ratio). */
-	@javax.annotation.Nullable
+	@Nullable
 	private static DecayData computeDecayData(Isotopes s) {
-		java.util.List<DecayProduct> li = new java.util.ArrayList<>();
+		List<DecayProduct> li = new ArrayList<>();
 		for (Isotopes i : isoList)
 			li.add(new DecayProduct(i, i.getChemicalSymbol(), i.getAtomicWeight()));
 		for (int w : new int[]{204, 206, 207, 208})

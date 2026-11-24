@@ -16,6 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import reika.reactorcraft.content.entity.NeutronEntity;
 import reika.reactorcraft.registry.ReactorEntities;
 import reika.rotarycraft.lib.world.TemperatureEnvironment;
 
@@ -121,7 +122,7 @@ public class PlasmaEntity extends Entity {
 	}
 
 	private void collide(Entity e) {
-		if (e instanceof PlasmaEntity || e instanceof FusionEntity || e instanceof reika.reactorcraft.content.entity.NeutronEntity)
+		if (e instanceof PlasmaEntity || e instanceof FusionEntity || e instanceof NeutronEntity)
 			return;
 		float dmg = e instanceof LivingEntity le && le.hasEffect(MobEffects.FIRE_RESISTANCE) ? 4 : Integer.MAX_VALUE;
 		e.hurt(e.damageSources().source(FusionDamage.FUSION), dmg);

@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import reika.reactorcraft.content.block.SteamBlock;
 import reika.reactorcraft.registry.ReactorBlockEntities;
 import reika.reactorcraft.registry.ReactorBlocks;
+import reika.rotarycraft.api.interfaces.Screwdriverable;
 import reika.rotarycraft.content.blockentity.RotaryCraftBlockEntity;
 
 /**
@@ -20,7 +21,7 @@ import reika.rotarycraft.content.blockentity.RotaryCraftBlockEntity;
  * difference +1 per tick) and lets one unit out per tick as a steam block above it (steam that can drive a turbine; ammonia steam is
  * marked as such). With the screwdriver (sneaking) it only works with a redstone signal.
  */
-public class SteamGrateBlockEntity extends RotaryCraftBlockEntity implements SteamTile, reika.rotarycraft.api.interfaces.Screwdriverable {
+public class SteamGrateBlockEntity extends RotaryCraftBlockEntity implements SteamTile, Screwdriverable {
 
 	private int steam;
 	private boolean requireRedstone;

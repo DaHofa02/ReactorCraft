@@ -16,12 +16,16 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.PipeBlock;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
@@ -37,6 +41,7 @@ import reika.reactorcraft.ReactorCraft;
 import reika.rotarycraft.content.blockentity.CompactorBlockEntity;
 import reika.rotarycraft.content.piping.PipingBlockEntity;
 import reika.rotarycraft.registry.RotaryBlocks;
+import reika.rotarycraft.registry.RotaryItems;
 
 @GameTestHolder(ReactorCraft.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -213,8 +218,8 @@ public class CompatTests {
 		h.setBlock(tank, mek("creative_fluid_tank"));
 		IFluidHandler t = h.getLevel().getCapability(Capabilities.FluidHandler.BLOCK, h.absolutePos(tank), Direction.UP);
 		//a creative tank voids what automation pours in; its fluid is set by using a bucket on it
-		var player = h.makeMockPlayer(net.minecraft.world.level.GameType.CREATIVE);
-		player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(reika.rotarycraft.registry.RotaryItems.ETHANOL_BUCKET.get()));
+		var player = h.makeMockPlayer(GameType.CREATIVE);
+		player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(RotaryItems.ETHANOL_BUCKET.get()));
 		h.useBlock(tank, player);
 		h.assertTrue(t != null && t.getFluidInTank(0).getAmount() > 1000000, "creative tank not set: "+(t == null ? "no handler" : t.getFluidInTank(0).getAmount()+" mB"));
 		h.setBlock(tank.above(), RotaryBlocks.FUEL_LINE.get());
@@ -223,7 +228,7 @@ public class CompatTests {
 			PipingBlockEntity p = (PipingBlockEntity)h.getBlockEntity(tank.above());
 			h.assertTrue(p.getFluidLevel() > 0 && p.getPressure() < p.getMaxPressure(), "fuel line "+p.getFluidLevel()+" mB at "+p.getPressure()+" Pa; tank gives "
 					+t.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.SIMULATE).getAmount()+" "+t.getFluidInTank(0).getFluid()+", down connected "
-					+p.getBlockState().getValue(net.minecraft.world.level.block.PipeBlock.DOWN));
+					+p.getBlockState().getValue(PipeBlock.DOWN));
 			h.succeed();
 		});
 	}
@@ -236,10 +241,10 @@ public class CompatTests {
 		CompactorBlockEntity te = (CompactorBlockEntity)h.getBlockEntity(c);
 		te.getInventory().setStackInSlot(4, new ItemStack(Items.PACKED_ICE, 3));
 		h.setBlock(c.above(), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
-		var top = (net.minecraft.world.level.block.entity.HopperBlockEntity)h.getBlockEntity(c.above());
+		var top = (HopperBlockEntity)h.getBlockEntity(c.above());
 		top.setItem(0, new ItemStack(Items.ICE, 8));
 		h.setBlock(c.below(), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
-		var bottom = (net.minecraft.world.level.block.entity.HopperBlockEntity)h.getBlockEntity(c.below());
+		var bottom = (HopperBlockEntity)h.getBlockEntity(c.below());
 		h.succeedWhen(() -> {
 			h.assertTrue(top.getItem(0).isEmpty(), "hopper still holds "+top.getItem(0));
 			int ice = 0;

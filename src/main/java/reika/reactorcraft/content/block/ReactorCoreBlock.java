@@ -24,13 +24,25 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 
 import reika.reactorcraft.content.menu.NuclearCoreMenu;
+import reika.reactorcraft.content.menu.ThoriumCoreMenu;
+import reika.reactorcraft.content.menu.WasteMenus;
+import reika.reactorcraft.reactor.IntermediateBoilerBlockEntity;
 import reika.reactorcraft.reactor.LiquidStates;
 import reika.reactorcraft.reactor.NuclearCoreBlockEntity;
+import reika.reactorcraft.reactor.PebbleBedBlockEntity;
+import reika.reactorcraft.reactor.ReactorBoilerBlockEntity;
+import reika.reactorcraft.reactor.SodiumHeaterBlockEntity;
+import reika.reactorcraft.reactor.ThoriumCoreBlockEntity;
+import reika.reactorcraft.reactor.TritizerBlockEntity;
 import reika.reactorcraft.reactor.WaterCellBlockEntity;
+import reika.reactorcraft.registry.ReactorFluids;
 import reika.reactorcraft.registry.ReactorItems;
+import reika.reactorcraft.waste.WasteDecayerBlockEntity;
 import reika.rotarycraft.content.block.MachineBlock;
 import reika.rotarycraft.content.blockentity.RotaryCraftBlockEntity;
 
@@ -70,11 +82,11 @@ public class ReactorCoreBlock extends MachineBlock {
 
 	/** Original TileEntityNuclearCore.getTextureState for the side faces. */
 	private void updateColumnState(Level world, BlockPos pos) {
-		if (world.isClientSide || !(world.getBlockEntity(pos) instanceof NuclearCoreBlockEntity || world.getBlockEntity(pos) instanceof reika.reactorcraft.reactor.ReactorBoilerBlockEntity
-				|| world.getBlockEntity(pos) instanceof reika.reactorcraft.waste.WasteDecayerBlockEntity
-				|| world.getBlockEntity(pos) instanceof reika.reactorcraft.reactor.IntermediateBoilerBlockEntity
-				|| world.getBlockEntity(pos) instanceof reika.reactorcraft.reactor.PebbleBedBlockEntity
-				|| world.getBlockEntity(pos) instanceof reika.reactorcraft.reactor.TritizerBlockEntity))
+		if (world.isClientSide || !(world.getBlockEntity(pos) instanceof NuclearCoreBlockEntity || world.getBlockEntity(pos) instanceof ReactorBoilerBlockEntity
+				|| world.getBlockEntity(pos) instanceof WasteDecayerBlockEntity
+				|| world.getBlockEntity(pos) instanceof IntermediateBoilerBlockEntity
+				|| world.getBlockEntity(pos) instanceof PebbleBedBlockEntity
+				|| world.getBlockEntity(pos) instanceof TritizerBlockEntity))
 			return;
 		boolean up = world.getBlockState(pos.above()).is(this), down = world.getBlockState(pos.below()).is(this);
 		setTextureState(world, pos, up && down ? 2 : up ? 1 : down ? 3 : 0);
@@ -102,19 +114,19 @@ public class ReactorCoreBlock extends MachineBlock {
 	protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player ep, BlockHitResult hit) {
 		if (ep.isShiftKeyDown())
 			return InteractionResult.PASS;
-		if (world.getBlockEntity(pos) instanceof reika.reactorcraft.reactor.ThoriumCoreBlockEntity te) {
+		if (world.getBlockEntity(pos) instanceof ThoriumCoreBlockEntity te) {
 			if (!world.isClientSide && ep instanceof ServerPlayer sp && te.isPlayerAccessible(sp))
-				sp.openMenu(new SimpleMenuProvider((id, inv, p) -> new reika.reactorcraft.content.menu.ThoriumCoreMenu(id, inv, te), state.getBlock().getName()), buf -> buf.writeBlockPos(pos));
+				sp.openMenu(new SimpleMenuProvider((id, inv, p) -> new ThoriumCoreMenu(id, inv, te), state.getBlock().getName()), buf -> buf.writeBlockPos(pos));
 			return InteractionResult.sidedSuccess(world.isClientSide);
 		}
-		if (world.getBlockEntity(pos) instanceof reika.reactorcraft.reactor.PebbleBedBlockEntity te) {
+		if (world.getBlockEntity(pos) instanceof PebbleBedBlockEntity te) {
 			if (!world.isClientSide && ep instanceof ServerPlayer sp && te.isPlayerAccessible(sp))
-				sp.openMenu(new SimpleMenuProvider((id, inv, p) -> new reika.reactorcraft.content.menu.WasteMenus.PebbleBed(id, inv, te), state.getBlock().getName()), buf -> buf.writeBlockPos(pos));
+				sp.openMenu(new SimpleMenuProvider((id, inv, p) -> new WasteMenus.PebbleBed(id, inv, te), state.getBlock().getName()), buf -> buf.writeBlockPos(pos));
 			return InteractionResult.sidedSuccess(world.isClientSide);
 		}
-		if (world.getBlockEntity(pos) instanceof reika.reactorcraft.waste.WasteDecayerBlockEntity te) {
+		if (world.getBlockEntity(pos) instanceof WasteDecayerBlockEntity te) {
 			if (!world.isClientSide && ep instanceof ServerPlayer sp && te.isPlayerAccessible(sp))
-				sp.openMenu(new SimpleMenuProvider((id, inv, p) -> new reika.reactorcraft.content.menu.WasteMenus.Decayer(id, inv, te), state.getBlock().getName()), buf -> buf.writeBlockPos(pos));
+				sp.openMenu(new SimpleMenuProvider((id, inv, p) -> new WasteMenus.Decayer(id, inv, te), state.getBlock().getName()), buf -> buf.writeBlockPos(pos));
 			return InteractionResult.sidedSuccess(world.isClientSide);
 		}
 		if (world.getBlockEntity(pos) instanceof NuclearCoreBlockEntity te) {
@@ -129,24 +141,24 @@ public class ReactorCoreBlock extends MachineBlock {
 	@Override
 	protected ItemInteractionResult useItemOn(ItemStack is, BlockState state, Level world, BlockPos pos, Player ep, InteractionHand hand, BlockHitResult hit) {
 		//original: a sodium canister fills 1000 mB into the sodium heater and is replaced by an (iron) bucket - kept as in the original
-		if (!ep.isShiftKeyDown() && is.getCount() == 1 && world.getBlockEntity(pos) instanceof reika.reactorcraft.reactor.SodiumHeaterBlockEntity sh
-				&& is.is(ReactorItems.canisterFor(reika.reactorcraft.registry.ReactorFluids.get("sodium")))) {
-			if (sh.getTank().getFluidAmount()+1000 <= reika.reactorcraft.reactor.SodiumHeaterBlockEntity.CAPACITY) {
+		if (!ep.isShiftKeyDown() && is.getCount() == 1 && world.getBlockEntity(pos) instanceof SodiumHeaterBlockEntity sh
+				&& is.is(ReactorItems.canisterFor(ReactorFluids.get("sodium")))) {
+			if (sh.getTank().getFluidAmount()+1000 <= SodiumHeaterBlockEntity.CAPACITY) {
 				if (!world.isClientSide && sh.addSodium(1000) && !ep.isCreative())
 					ep.setItemInHand(hand, new ItemStack(Items.BUCKET));
 				return ItemInteractionResult.sidedSuccess(world.isClientSide);
 			}
 		}
-		if (!ep.isShiftKeyDown() && is.getCount() == 1 && world.getBlockEntity(pos) instanceof reika.reactorcraft.reactor.ReactorBoilerBlockEntity te
-				&& te.getTank().getFluidAmount()+1000 <= reika.reactorcraft.reactor.ReactorBoilerBlockEntity.CAPACITY) {
-			net.minecraft.world.level.material.Fluid f = null;
+		if (!ep.isShiftKeyDown() && is.getCount() == 1 && world.getBlockEntity(pos) instanceof ReactorBoilerBlockEntity te
+				&& te.getTank().getFluidAmount()+1000 <= ReactorBoilerBlockEntity.CAPACITY) {
+			Fluid f = null;
 			ItemStack back = null;
 			if (is.is(Items.WATER_BUCKET)) {
-				f = net.minecraft.world.level.material.Fluids.WATER;
+				f = Fluids.WATER;
 				back = new ItemStack(Items.BUCKET);
 			}
-			else if (is.is(ReactorItems.canisterFor(reika.reactorcraft.registry.ReactorFluids.get("ammonia")))) {
-				f = reika.reactorcraft.registry.ReactorFluids.get("ammonia");
+			else if (is.is(ReactorItems.canisterFor(ReactorFluids.get("ammonia")))) {
+				f = ReactorFluids.get("ammonia");
 				back = new ItemStack(ReactorItems.EMPTY_CANISTER.get());
 			}
 			if (f != null) {
@@ -168,11 +180,11 @@ public class ReactorCoreBlock extends MachineBlock {
 						to = LiquidStates.HEAVY;
 						back = new ItemStack(Items.BUCKET);
 					}
-					else if (is.is(ReactorItems.canisterFor(reika.reactorcraft.registry.ReactorFluids.get("sodium")))) {
+					else if (is.is(ReactorItems.canisterFor(ReactorFluids.get("sodium")))) {
 						to = LiquidStates.SODIUM;
 						back = new ItemStack(ReactorItems.EMPTY_CANISTER.get());
 					}
-					else if (is.is(ReactorItems.canisterFor(reika.reactorcraft.registry.ReactorFluids.get("lifbe")))) {
+					else if (is.is(ReactorItems.canisterFor(ReactorFluids.get("lifbe")))) {
 						to = LiquidStates.LITHIUM;
 						back = new ItemStack(ReactorItems.EMPTY_CANISTER.get());
 					}
@@ -192,13 +204,13 @@ public class ReactorCoreBlock extends MachineBlock {
 				case SODIUM -> {
 					if (is.is(ReactorItems.EMPTY_CANISTER.get())) {
 						to = LiquidStates.EMPTY;
-						back = new ItemStack(ReactorItems.canisterFor(reika.reactorcraft.registry.ReactorFluids.get("sodium")));
+						back = new ItemStack(ReactorItems.canisterFor(ReactorFluids.get("sodium")));
 					}
 				}
 				case LITHIUM -> {
 					if (is.is(ReactorItems.EMPTY_CANISTER.get())) {
 						to = LiquidStates.EMPTY;
-						back = new ItemStack(ReactorItems.canisterFor(reika.reactorcraft.registry.ReactorFluids.get("lifbe")));
+						back = new ItemStack(ReactorItems.canisterFor(ReactorFluids.get("lifbe")));
 					}
 				}
 			}

@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -102,6 +103,6 @@ public class FluoriteBlock extends Block {
 	protected void spawnAfterBreak(BlockState state, ServerLevel world, BlockPos pos, ItemStack tool, boolean dropExperience) {
 		super.spawnAfterBreak(state, world, pos, tool, dropExperience);
 		if (isOre && dropExperience && world.random.nextFloat() < ReactorOres.FLUORITE.xpDropped)
-			this.tryDropExperience(world, pos, tool, net.minecraft.util.valueproviders.ConstantInt.of(1)); //none with silk touch
+			this.tryDropExperience(world, pos, tool, ConstantInt.of(1)); //none with silk touch
 	}
 }

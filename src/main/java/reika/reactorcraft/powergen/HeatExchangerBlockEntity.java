@@ -10,7 +10,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
@@ -26,6 +28,7 @@ import reika.reactorcraft.registry.ReactorBlockEntities;
 import reika.reactorcraft.registry.ReactorFluids;
 import reika.rotarycraft.api.power.PowerTransferHelper;
 import reika.rotarycraft.api.power.ShaftPowerReceiver;
+import reika.rotarycraft.content.blockentity.HeatConduction;
 import reika.rotarycraft.content.blockentity.RotaryCraftBlockEntity;
 import reika.rotarycraft.content.blockentity.TemperatureMachine;
 import reika.rotarycraft.content.piping.PipeConnector;
@@ -222,7 +225,7 @@ public class HeatExchangerBlockEntity extends RotaryCraftBlockEntity implements 
 	}
 
 	@Nullable
-	private Direction adjacentBlock(Level world, BlockPos pos, net.minecraft.world.level.block.Block b) {
+	private Direction adjacentBlock(Level world, BlockPos pos, Block b) {
 		for (Direction d : Direction.values())
 			if (world.getBlockState(pos.relative(d)).is(b))
 				return d;
@@ -230,7 +233,7 @@ public class HeatExchangerBlockEntity extends RotaryCraftBlockEntity implements 
 	}
 
 	@Nullable
-	private Direction adjacentFluid(Level world, BlockPos pos, net.minecraft.tags.TagKey<Fluid> tag) {
+	private Direction adjacentFluid(Level world, BlockPos pos, TagKey<Fluid> tag) {
 		for (Direction d : Direction.values())
 			if (world.getFluidState(pos.relative(d)).is(tag))
 				return d;
@@ -442,6 +445,6 @@ public class HeatExchangerBlockEntity extends RotaryCraftBlockEntity implements 
 	/** Original TileEntityReactorBase.heatEnergyPerDegree: 50 times the default for the heat exchanger. */
 	@Override
 	public double heatEnergyPerDegree() {
-		return 50*reika.rotarycraft.content.blockentity.HeatConduction.baseHeatEnergyPerDegree(this);
+		return 50*HeatConduction.baseHeatEnergyPerDegree(this);
 	}
 }

@@ -20,6 +20,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 import reika.reactorcraft.content.block.TurbineMultiBlock;
 import reika.reactorcraft.reactor.HydrogenExplosion;
+import reika.reactorcraft.reactor.ReactorBoilerBlockEntity;
 import reika.reactorcraft.reactor.ReactorType;
 import reika.reactorcraft.registry.ReactorBlockEntities;
 import reika.reactorcraft.registry.ReactorFluids;
@@ -39,7 +40,7 @@ import reika.rotarycraft.registry.RotaryFluids;
 public class HiPTurbineBlockEntity extends TurbineCoreBlockEntity {
 
 	public static final int GEN_OMEGA = 131072;
-	public static final int FLUID_PER_RESERVOIR = reika.reactorcraft.reactor.ReactorBoilerBlockEntity.WATER_PER_STEAM*131/20/24*6/10;
+	public static final int FLUID_PER_RESERVOIR = ReactorBoilerBlockEntity.WATER_PER_STEAM*131/20/24*6/10;
 	public static final int MAX_STEAM = 3250;
 
 	private WorkingFluid fluid = WorkingFluid.EMPTY;

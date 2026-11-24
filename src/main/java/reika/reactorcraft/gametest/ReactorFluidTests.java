@@ -5,6 +5,7 @@
 package reika.reactorcraft.gametest;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
@@ -54,7 +55,7 @@ public class ReactorFluidTests {
 		h.assertTrue(bucket.getContainer().is(ReactorItems.HEAVY_WATER_BUCKET.get()), "bucket became "+bucket.getContainer());
 		BlockPos p = new BlockPos(4, 1, 4);
 		h.setBlock(p, RotaryBlocks.RESERVOIR.get());
-		IFluidHandler res = h.getLevel().getCapability(Capabilities.FluidHandler.BLOCK, h.absolutePos(p), net.minecraft.core.Direction.NORTH);
+		IFluidHandler res = h.getLevel().getCapability(Capabilities.FluidHandler.BLOCK, h.absolutePos(p), Direction.NORTH);
 		h.assertTrue(res != null, "reservoir has no fluid handler");
 		var result = FluidUtil.tryEmptyContainer(bucket.getContainer(), res, 1000, null, true);
 		h.assertTrue(result.isSuccess() && result.getResult().is(Items.BUCKET), "bucket not emptied: "+result.getResult());

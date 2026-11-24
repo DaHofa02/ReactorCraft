@@ -12,10 +12,13 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -37,7 +40,13 @@ import reika.reactorcraft.fusion.PlasmaEntity;
 import reika.reactorcraft.fusion.SolenoidMagnetBlockEntity;
 import reika.reactorcraft.fusion.ToroidMagnetBlockEntity;
 import reika.reactorcraft.fusion.ToroidMagnetBlockEntity.Aim;
+import reika.reactorcraft.registry.ReactorBlockEntities;
+import reika.reactorcraft.registry.ReactorEntities;
 import reika.rotarycraft.client.model.TechneModel;
+import reika.rotarycraft.client.render.IORenderer;
+import reika.rotarycraft.client.render.PipeFluidRenderer;
+
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 /** The fusion reactor's renderers (original RenderMagnet, RenderSolenoid, RenderGasCollector, RenderFusionMarker, RenderPlasma, RenderFusion). */
 public final class FusionRenderers {
@@ -145,9 +154,9 @@ public final class FusionRenderers {
 				//the solenoid sits inside its structure (opaque parts all round), where the light is 0: the whole ring drawn with it came out
 				//black. Light it as the open space above the core (the original took the world brightness at the coil).
 				BlockPos p = tile.getBlockPos();
-				int above = net.minecraft.client.renderer.LevelRenderer.getLightColor(tile.getLevel(), p.above(2));
-				light = net.minecraft.client.renderer.LightTexture.pack(Math.max(net.minecraft.client.renderer.LightTexture.block(light), net.minecraft.client.renderer.LightTexture.block(above)),
-						Math.max(net.minecraft.client.renderer.LightTexture.sky(light), net.minecraft.client.renderer.LightTexture.sky(above)));
+				int above = LevelRenderer.getLightColor(tile.getLevel(), p.above(2));
+				light = LightTexture.pack(Math.max(LightTexture.block(light), LightTexture.block(above)),
+						Math.max(LightTexture.sky(light), LightTexture.sky(above)));
 			}
 			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("solenoid.png"))), light, overlay, tile, List.of(world && tile.canRenderCoil()), -tile.phi, 0);
 			pose.popPose();
@@ -370,7 +379,7 @@ public final class FusionRenderers {
 		}
 	}
 
-	private static void sprite(PoseStack pose, MultiBufferSource buf, net.minecraft.client.renderer.entity.EntityRenderDispatcher d, ResourceLocation tex, float size, int c) {
+	private static void sprite(PoseStack pose, MultiBufferSource buf, EntityRenderDispatcher d, ResourceLocation tex, float size, int c) {
 		pose.pushPose();
 		pose.mulPose(d.cameraOrientation());
 		pose.scale(size, size, 1);
@@ -386,19 +395,19 @@ public final class FusionRenderers {
 	}
 
 	/** Called from ReactorClient's renderer and layer events. */
-	public static void registerLayers(net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterLayerDefinitions e) {
+	public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions e) {
 		e.registerLayerDefinition(MAGNET, ModelMagnet::createLayer);
 		e.registerLayerDefinition(SOLENOID, ModelSolenoid::createLayer);
 		e.registerLayerDefinition(GAS_COLLECTOR, ModelGasCollector::createLayer);
 	}
 
-	public static void registerRenderers(net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) {
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.TOROID_MAGNET.get(), Magnet::new);
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.SOLENOID.get(), ctx -> new reika.rotarycraft.client.render.IORenderer<>(new Solenoid(ctx)));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.GAS_COLLECTOR.get(), GasCollector::new);
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.FUSION_MARKER.get(), Marker::new);
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.MAGNETIC_PIPE.get(), reika.rotarycraft.client.render.PipeFluidRenderer::new);
-		e.registerEntityRenderer(reika.reactorcraft.registry.ReactorEntities.PLASMA.get(), Plasma::new);
-		e.registerEntityRenderer(reika.reactorcraft.registry.ReactorEntities.FUSION.get(), Fusion::new);
+	public static void registerRenderers(EntityRenderersEvent.RegisterRenderers e) {
+		e.registerBlockEntityRenderer(ReactorBlockEntities.TOROID_MAGNET.get(), Magnet::new);
+		e.registerBlockEntityRenderer(ReactorBlockEntities.SOLENOID.get(), ctx -> new IORenderer<>(new Solenoid(ctx)));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.GAS_COLLECTOR.get(), GasCollector::new);
+		e.registerBlockEntityRenderer(ReactorBlockEntities.FUSION_MARKER.get(), Marker::new);
+		e.registerBlockEntityRenderer(ReactorBlockEntities.MAGNETIC_PIPE.get(), PipeFluidRenderer::new);
+		e.registerEntityRenderer(ReactorEntities.PLASMA.get(), Plasma::new);
+		e.registerEntityRenderer(ReactorEntities.FUSION.get(), Fusion::new);
 	}
 }

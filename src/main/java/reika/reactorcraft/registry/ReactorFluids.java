@@ -7,16 +7,23 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.material.Fluid;
 
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 import reika.reactorcraft.ReactorCraft;
+import reika.reactorcraft.content.fluid.CoriumFluid;
+
+import reika.rotarycraft.lib.LegacyResistance;
 
 /**
  * Original: the Fluid fields of ReactorCraft (addLiquids) with their density, viscosity, temperature (K) and luminosity. Like in the
@@ -83,13 +90,13 @@ public final class ReactorFluids {
 				if (id.equals("heavy_water"))
 					props[0].bucket(() -> (Item)ReactorItems.HEAVY_WATER_BUCKET.get());
 				if (id.equals("corium")) //original BlockCoriumFlowing: a world fluid, Forge tick rate viscosity/200
-					props[0].block(() -> (net.minecraft.world.level.block.LiquidBlock)ReactorBlocks.CORIUM.get()).tickRate(40).explosionResistance(reika.rotarycraft.lib.LegacyResistance.of(500F));
+					props[0].block(() -> (LiquidBlock)ReactorBlocks.CORIUM.get()).tickRate(40).explosionResistance(LegacyResistance.of(500F));
 			}
 			return props[0];
 		};
 		boolean corium = id.equals("corium");
-		source[0] = FLUIDS.register(id, () -> corium ? new reika.reactorcraft.content.fluid.CoriumFluid.Source(p.get()) : new BaseFlowingFluid.Source(p.get()));
-		flowing[0] = FLUIDS.register("flowing_"+id, () -> corium ? new reika.reactorcraft.content.fluid.CoriumFluid.Flowing(p.get()) : new BaseFlowingFluid.Flowing(p.get()));
+		source[0] = FLUIDS.register(id, () -> corium ? new CoriumFluid.Source(p.get()) : new BaseFlowingFluid.Source(p.get()));
+		flowing[0] = FLUIDS.register("flowing_"+id, () -> corium ? new CoriumFluid.Flowing(p.get()) : new BaseFlowingFluid.Flowing(p.get()));
 		return source[0];
 	}
 
@@ -102,12 +109,12 @@ public final class ReactorFluids {
 	 * c:gaseous or a fluid type lighter than air (Forge 1.7.10 had a separate gaseous flag, NeoForge 1.21 has neither).
 	 */
 	public static boolean isGaseous(Fluid f) {
-		net.minecraft.resources.ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(f);
+		ResourceLocation id = BuiltInRegistries.FLUID.getKey(f);
 		if (ReactorCraft.MOD_ID.equals(id.getNamespace())) {
 			Def d = DEFS.get(id.getPath().startsWith("flowing_") ? id.getPath().substring(8) : id.getPath());
 			if (d != null)
 				return d.gas();
 		}
-		return f.is(net.neoforged.neoforge.common.Tags.Fluids.GASEOUS) || f.getFluidType().isLighterThanAir();
+		return f.is(Tags.Fluids.GASEOUS) || f.getFluidType().isLighterThanAir();
 	}
 }

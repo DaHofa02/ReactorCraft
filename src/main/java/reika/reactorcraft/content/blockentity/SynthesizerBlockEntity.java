@@ -16,6 +16,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.Clearable;
+import net.minecraft.world.Containers;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -48,7 +51,7 @@ import reika.rotarycraft.lib.world.AmbientTemperature;
  * to lava), max. 1000 C; above 100 C it melts snow and ice next to it. Two 24000 mB tanks: pipes fill from the sides, take from top and
  * bottom (also fuel lines). A water bucket in slot 0 (or used on the block) adds 1000 mB.
  */
-public class SynthesizerBlockEntity extends RotaryCraftBlockEntity implements FrictionHeatable, PipeConnector, net.minecraft.world.Clearable {
+public class SynthesizerBlockEntity extends RotaryCraftBlockEntity implements FrictionHeatable, PipeConnector, Clearable {
 
 	public static final int AMMONIATEMP = 220;
 	public static final int MAXTEMP = 1000;
@@ -103,7 +106,7 @@ public class SynthesizerBlockEntity extends RotaryCraftBlockEntity implements Fr
 		}
 	}
 
-	private static TagKey<net.minecraft.world.item.Item> tag(String path) {
+	private static TagKey<Item> tag(String path) {
 		return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", path));
 	}
 
@@ -442,7 +445,7 @@ public class SynthesizerBlockEntity extends RotaryCraftBlockEntity implements Fr
 	@Override
 	public void onBlockBroken(Level world, BlockPos pos) {
 		for (int i = 0; i < inv.getSlots(); i++)
-			net.minecraft.world.Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), inv.getStackInSlot(i).copy());
+			Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), inv.getStackInSlot(i).copy());
 	}
 
 	@Override

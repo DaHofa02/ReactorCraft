@@ -7,6 +7,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import reika.rotarycraft.content.blockentity.HeatConduction;
 
+import reika.reactorcraft.fusion.NeutronAbsorberBlockEntity;
+
 /**
  * Original: Reika.ReactorCraft.Auxiliary.Temperatured - reactor parts that exchange heat. Like the original (Temperatured extends
  * HeatConduction) they can be heated or drained by a heat pipe, with the defaults of TileEntityReactorBase.
@@ -58,7 +60,7 @@ public interface Temperatured extends HeatConduction {
 	 * and its intermediate boilers), the linkable cores (fuel, breeder and thorium cores, control rods) - not the CPU or the pebble bed.
 	 */
 	static boolean isReactorCore(BlockEntity te) {
-		return te instanceof WaterCellBlockEntity || te instanceof reika.reactorcraft.fusion.NeutronAbsorberBlockEntity || te instanceof ReactorBoilerBlockEntity
+		return te instanceof WaterCellBlockEntity || te instanceof NeutronAbsorberBlockEntity || te instanceof ReactorBoilerBlockEntity
 				|| te instanceof IntermediateBoilerBlockEntity || te instanceof LinkableReactorCore;
 	}
 }

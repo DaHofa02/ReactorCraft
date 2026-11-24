@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.Clearable;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -32,7 +33,7 @@ import reika.rotarycraft.lib.math.RandomHelper;
  * decay chance ln2/half-life times the unit's rate (base rate * 192). Units in a column pass their waste down (Feedable). Items enter
  * and leave from all sides. The ChromatiCraft acceleration upgrade does not exist here.
  */
-public abstract class WasteUnitBlockEntity extends ReactorBlockEntity implements net.minecraft.world.Clearable {
+public abstract class WasteUnitBlockEntity extends ReactorBlockEntity implements Clearable {
 
 	/** Original ReikaTimeHelper.YEAR.getMinecraftDuration (48 days of 24000 ticks). */
 	public static final double MC_YEAR = 24000*8*6;

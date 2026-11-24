@@ -28,6 +28,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -35,6 +36,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -44,6 +46,7 @@ import reika.electricraft.registry.BatteryType;
 import reika.electricraft.registry.ElectriBlocks;
 import reika.electricraft.registry.WireType;
 import reika.reactorcraft.ReactorCraft;
+import reika.reactorcraft.gametest.GregTechTests;
 import reika.reactorcraft.registry.ReactorBlocks;
 import reika.reactorcraft.registry.ReactorItems;
 import reika.reactorcraft.structure.Blueprints;
@@ -258,11 +261,11 @@ public final class BaseScene {
 	 * RF battery.
 	 */
 	private static void gregtech(ServerLevel w, BlockPos o, SimPlayer p) {
-		if (!net.neoforged.fml.ModList.get().isLoaded("gtceu"))
+		if (!ModList.get().isLoaded("gtceu"))
 			return;
-		net.minecraft.world.item.Item converter = reika.reactorcraft.gametest.GregTechTests.gt("lv_1a_energy_converter");
-		net.minecraft.world.item.Item cable = reika.reactorcraft.gametest.GregTechTests.gt("tin_single_cable");
-		net.minecraft.world.item.Item furnace = reika.reactorcraft.gametest.GregTechTests.gt("lv_electric_furnace");
+		Item converter = GregTechTests.gt("lv_1a_energy_converter");
+		Item cable = GregTechTests.gt("tin_single_cable");
+		Item furnace = GregTechTests.gt("lv_electric_furnace");
 		int x = 20, z = 38;
 		BlockPos a = new BlockPos(x+6, 1, z), b = new BlockPos(x+5, 1, z-2), f = new BlockPos(x+4, 1, z), c = a.above();
 		p.place(a, new ItemStack(ElectriBlocks.RF_BATTERY.get()), Direction.EAST);
@@ -270,14 +273,14 @@ public final class BaseScene {
 			ba.setStoredEnergy(1000000);
 		p.place(a.south(), new ItemStack(Items.REDSTONE_BLOCK), Direction.EAST);
 		p.placeSneaking(c, new ItemStack(converter), Direction.EAST);
-		p.use(c, reika.reactorcraft.gametest.GregTechTests.tool("mallet", "rubber"));
+		p.use(c, GregTechTests.tool("mallet", "rubber"));
 		BlockPos k1 = new BlockPos(x+5, 1, z), k2 = k1.above(), k3 = k1.north();
 		p.place(k1, new ItemStack(cable), Direction.EAST);
 		p.place(k2, new ItemStack(cable), Direction.EAST);
 		p.place(f, new ItemStack(furnace), Direction.EAST);
 		p.place(k3, new ItemStack(cable), Direction.EAST);
 		p.place(b, new ItemStack(ElectriBlocks.RF_BATTERY.get()), Direction.EAST);
-		p.hold(reika.reactorcraft.gametest.GregTechTests.tool("wire_cutter", "iron"));
+		p.hold(GregTechTests.tool("wire_cutter", "iron"));
 		p.useOn(k2, Direction.EAST);
 		p.useOn(k1, Direction.WEST);
 		p.useOn(k3, Direction.SOUTH);

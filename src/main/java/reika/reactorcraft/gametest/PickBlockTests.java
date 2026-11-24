@@ -9,6 +9,7 @@ package reika.reactorcraft.gametest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -69,7 +70,7 @@ public class PickBlockTests {
 	}
 
 	private static String variant(ItemStack is) {
-		java.util.TreeMap<String, String> m = new java.util.TreeMap<>();
+		TreeMap<String, String> m = new TreeMap<>();
 		for (var e : is.getComponentsPatch().entrySet()) {
 			ResourceLocation k = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(e.getKey());
 			if (k != null && MODS.contains(k.getNamespace()) && !CONTENTS.contains(k.toString()))

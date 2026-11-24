@@ -14,6 +14,8 @@ import reika.reactorcraft.registry.ReactorBlockEntities;
 import reika.reactorcraft.registry.ReactorComponents;
 import reika.reactorcraft.registry.ReactorItems;
 
+import javax.annotation.Nullable;
+
 /**
  * Original: Reika.ReactorCraft.TileEntities.Fission.TileEntityFuelRod with ReactorFuel - a neutron that can cause fission (with the
  * neutron speed's interaction chance) is lost to waste poisoning 1/(9-waste) of the time, else causes fission with the fuel's chance
@@ -42,7 +44,7 @@ public class FuelRodBlockEntity extends NuclearCoreBlockEntity {
 			voidCoefficient = v;
 		}
 
-		@javax.annotation.Nullable
+		@Nullable
 		public static ReactorFuel getFrom(ItemStack is) {
 			if (is.is(ReactorItems.FUEL.get()))
 				return URANIUM;

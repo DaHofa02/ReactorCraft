@@ -8,6 +8,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.item.ItemStack;
@@ -115,7 +117,7 @@ public class WasteTests {
 	public static void inventoryLoadsFromNbt(GameTestHelper h) throws Exception {
 		h.setBlock(new BlockPos(4, 2, 4), ReactorBlocks.WASTE_CONTAINER.get());
 		WasteContainerBlockEntity te = (WasteContainerBlockEntity)h.getBlockEntity(new BlockPos(4, 2, 4));
-		net.minecraft.nbt.CompoundTag tag = net.minecraft.nbt.TagParser.parseTag("{inv:{Size:27,Items:[{Slot:26,id:\"reactorcraft:waste\",count:1,components:{\"reactorcraft:isotope\":10}}]}}");
+		CompoundTag tag = TagParser.parseTag("{inv:{Size:27,Items:[{Slot:26,id:\"reactorcraft:waste\",count:1,components:{\"reactorcraft:isotope\":10}}]}}");
 		te.loadWithComponents(tag, h.getLevel().registryAccess());
 		h.assertTrue(WasteUnitBlockEntity.getIsotope(te.getInventory().getStackInSlot(26)) == Isotopes.Cs134, "slot 26: "+te.getInventory().getStackInSlot(26));
 		h.succeed();

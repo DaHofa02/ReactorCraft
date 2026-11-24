@@ -25,6 +25,7 @@ import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
 
 import reika.reactorcraft.ReactorConfig;
+import reika.reactorcraft.content.block.ReactorOreBlock;
 import reika.reactorcraft.registry.FluoriteTypes;
 import reika.reactorcraft.registry.ReactorBlocks;
 import reika.reactorcraft.registry.ReactorOres;
@@ -59,7 +60,7 @@ public final class ReactorOrePlacement extends PlacementModifier {
 		TagKey<Block> tag = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("c", "ores/"+ore.dictName));
 		Block own = ore == ReactorOres.FLUORITE ? null : ReactorBlocks.ore(ore).get();
 		for (var h : BuiltInRegistries.BLOCK.getTagOrEmpty(tag))
-			if (h.value() != own && !(h.value() instanceof reika.reactorcraft.content.block.ReactorOreBlock))
+			if (h.value() != own && !(h.value() instanceof ReactorOreBlock))
 				return false;
 		return true;
 	}

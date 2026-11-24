@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -23,6 +24,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import reika.electricraft.content.blockentity.BatteryBlockEntity;
+import reika.electricraft.content.blockentity.FuseBlockEntity;
 import reika.electricraft.content.blockentity.MeterBlockEntity;
 import reika.electricraft.content.blockentity.ResistorBlockEntity;
 import reika.electricraft.registry.BatteryType;
@@ -58,7 +60,7 @@ public class ZoneElectric {
 		BLOCKS = List.copyOf(li);
 	}
 
-	private static String id(net.minecraft.world.level.block.Block b) {
+	private static String id(Block b) {
 		return BuiltInRegistries.BLOCK.getKey(b).toString();
 	}
 
@@ -209,7 +211,7 @@ public class ZoneElectric {
 		h.succeedWhen(() -> {
 			h.assertTrue(on[0], "lever not flipped yet");
 			h.assertTrue(dyna.omega == 40 && dyna.torque == 8, "expected 40 rad/s @ 8 Nm, got "+dyna.omega+" @ "+dyna.torque);
-			h.assertTrue(!((reika.electricraft.content.blockentity.FuseBlockEntity)h.getBlockEntity(new BlockPos(12, 2, Z))).isOverloaded(), "fuse blew");
+			h.assertTrue(!((FuseBlockEntity)h.getBlockEntity(new BlockPos(12, 2, Z))).isOverloaded(), "fuse blew");
 			Factory.assertBuilt(h, ZoneElectricLists.LINE2, new BlockPos(0, 2, 0), new BlockPos(47, 2, 47));
 			p.leave();
 		});

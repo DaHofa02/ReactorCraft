@@ -9,6 +9,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.Clearable;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,7 +36,7 @@ import reika.rotarycraft.content.piping.PipeType;
  * dust. Step time 900 ticks, shorter from 524288 rad/s (800) up to 67108864 rad/s (8). 12000 mB tank filled only from the top; the dusts
  * can be taken out at the top and bottom.
  */
-public class IsoCentrifugeBlockEntity extends RotaryCraftBlockEntity implements ShaftPowerReceiver, PipeConnector, net.minecraft.world.Clearable {
+public class IsoCentrifugeBlockEntity extends RotaryCraftBlockEntity implements ShaftPowerReceiver, PipeConnector, Clearable {
 
 	public static final int MINSPEED = 262144;
 	public static final int UF6_PER_DUST = 50;
@@ -352,7 +354,7 @@ public class IsoCentrifugeBlockEntity extends RotaryCraftBlockEntity implements 
 	@Override
 	public void onBlockBroken(Level world, BlockPos pos) {
 		for (int i = 0; i < inv.getSlots(); i++)
-			net.minecraft.world.Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), inv.getStackInSlot(i).copy());
+			Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), inv.getStackInSlot(i).copy());
 	}
 
 	@Override

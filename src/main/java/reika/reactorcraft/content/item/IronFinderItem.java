@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -30,7 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class IronFinderItem extends Item {
 
-	private static final List<TagKey<Block>> ORES = java.util.stream.Stream.of("iron", "redstone", "nickel", "cobalt", "certus_quartz", "nikolite",
+	private static final List<TagKey<Block>> ORES = Stream.of("iron", "redstone", "nickel", "cobalt", "certus_quartz", "nikolite",
 			"magnetite", "teslatite", "silicon", "dilithium", "mimichite")
 			.map(s -> TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("c", "ores/"+s))).toList();
 

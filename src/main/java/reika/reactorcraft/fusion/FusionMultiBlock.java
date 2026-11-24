@@ -7,6 +7,8 @@ import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
@@ -22,6 +24,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.storage.loot.LootParams;
 
 import reika.rotarycraft.content.piping.PipingBlockEntity;
 
@@ -126,7 +129,7 @@ public class FusionMultiBlock extends Block {
 	}
 
 	@Override
-	protected List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
+	protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
 		return List.of(new ItemStack(this));
 	}
 
@@ -277,7 +280,7 @@ public class FusionMultiBlock extends Block {
 			o = o.below();
 		final BlockPos x = o;
 		final Direction f = dir;
-		java.util.function.BiFunction<Integer, Integer, BlockPos> P = (i, y) -> x.relative(f, i).above(y);
+		BiFunction<Integer, Integer, BlockPos> P = (i, y) -> x.relative(f, i).above(y);
 		for (int i = 0; i <= 4; i++)
 			if (!at(world, P.apply(i, 3), 3)) return false;
 		for (int i = 5; i <= 6; i++)
@@ -357,7 +360,7 @@ public class FusionMultiBlock extends Block {
 		if (blocks.isEmpty())
 			return false;
 		BlockPos lo = min(blocks);
-		java.util.function.Function<int[], Integer> key = c -> { //getBlockKeyRelativeToMinXYZ: -2 = not in the array, -3 = the heater
+		Function<int[], Integer> key = c -> { //getBlockKeyRelativeToMinXYZ: -2 = not in the array, -3 = the heater
 			BlockPos p = lo.offset(c[0], c[1], c[2]);
 			if (!blocks.contains(p))
 				return -2;

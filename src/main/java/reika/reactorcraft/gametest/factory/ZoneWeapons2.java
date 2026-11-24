@@ -37,6 +37,7 @@ import reika.rotarycraft.gametest.SimPlayer;
 import reika.rotarycraft.network.RotaryNetwork;
 import reika.rotarycraft.registry.RotaryBlocks;
 import reika.rotarycraft.registry.RotaryFluids;
+import reika.rotarycraft.registry.RotaryItems;
 
 @GameTestHolder(ReactorCraft.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -67,7 +68,7 @@ public class ZoneWeapons2 {
 		BlockPos mag = new BlockPos(8, 2, 1), gun = new BlockPos(7, 2, 1);
 		p.place(mag, RotaryBlocks.MAGNETIC_ENGINE.get(), Direction.EAST); //drives west
 		MagneticEngineBlockEntity me = (MagneticEngineBlockEntity)h.getBlockEntity(mag);
-		for (var u : List.of(reika.rotarycraft.registry.RotaryItems.UPGRADE_MAGNET_1, reika.rotarycraft.registry.RotaryItems.UPGRADE_MAGNET_2, reika.rotarycraft.registry.RotaryItems.UPGRADE_MAGNET_3)) {
+		for (var u : List.of(RotaryItems.UPGRADE_MAGNET_1, RotaryItems.UPGRADE_MAGNET_2, RotaryItems.UPGRADE_MAGNET_3)) {
 			p.hold(u.get());
 			p.useOn(mag, Direction.UP); //tier 3: up to 2048 rad/s
 		}

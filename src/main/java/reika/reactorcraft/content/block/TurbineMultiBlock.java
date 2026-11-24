@@ -26,7 +26,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.storage.loot.LootParams;
 
+import reika.reactorcraft.powergen.HiPTurbineBlockEntity;
 import reika.reactorcraft.powergen.SteamInjectorBlockEntity;
 import reika.reactorcraft.powergen.TurbineCoreBlockEntity;
 import reika.reactorcraft.registry.ReactorBlocks;
@@ -99,7 +101,7 @@ public class TurbineMultiBlock extends BaseEntityBlock {
 	}
 
 	private static boolean isPartOrCore(Level world, BlockPos p) {
-		return isPart(world.getBlockState(p)) || world.getBlockEntity(p) instanceof reika.reactorcraft.powergen.HiPTurbineBlockEntity;
+		return isPart(world.getBlockState(p)) || world.getBlockEntity(p) instanceof HiPTurbineBlockEntity;
 	}
 
 	@Override
@@ -228,7 +230,7 @@ public class TurbineMultiBlock extends BaseEntityBlock {
 	}
 
 	@Override
-	protected List<ItemStack> getDrops(BlockState state, net.minecraft.world.level.storage.loot.LootParams.Builder params) {
+	protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
 		return List.of(new ItemStack(this));
 	}
 }

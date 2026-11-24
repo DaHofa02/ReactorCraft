@@ -12,6 +12,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.fluids.FluidStack;
 
 import reika.reactorcraft.ReactorCraft;
@@ -23,6 +25,7 @@ import reika.reactorcraft.registry.FluoriteTypes;
 import reika.reactorcraft.registry.ReactorBlocks;
 import reika.reactorcraft.registry.ReactorFluids;
 import reika.reactorcraft.registry.ReactorItems;
+import reika.reactorcraft.structure.Blueprints;
 import reika.rotarycraft.compat.jei.MachinePlugin;
 import reika.rotarycraft.compat.jei.MachineRecipe;
 import reika.rotarycraft.compat.jei.RotaryJeiPlugin;
@@ -96,13 +99,13 @@ public class ReactorJeiPlugin extends MachinePlugin {
 	@Override
 	public void registerRecipes(mezz.jei.api.registration.IRecipeRegistration reg) {
 		super.registerRecipes(reg);
-		reg.addRecipes(MultiblockCategory.TYPE, reika.reactorcraft.structure.Blueprints.all());
+		reg.addRecipes(MultiblockCategory.TYPE, Blueprints.all());
 	}
 
 	@Override
 	public void registerRecipeCatalysts(mezz.jei.api.registration.IRecipeCatalystRegistration reg) {
 		super.registerRecipeCatalysts(reg);
-		for (var bp : reika.reactorcraft.structure.Blueprints.all())
+		for (var bp : Blueprints.all())
 			reg.addRecipeCatalyst(new ItemStack(bp.machine()), MultiblockCategory.TYPE);
 	}
 
@@ -110,7 +113,7 @@ public class ReactorJeiPlugin extends MachinePlugin {
 	public void onRuntimeAvailable(mezz.jei.api.runtime.IJeiRuntime rt) {
 		JeiShowcase.runtime = rt;
 		if (JeiShowcase.ACTIVE)
-			net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post e) -> JeiShowcase.tick());
+			NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post e) -> JeiShowcase.tick());
 	}
 
 	@Override

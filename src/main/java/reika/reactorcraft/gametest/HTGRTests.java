@@ -5,6 +5,7 @@
 package reika.reactorcraft.gametest;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
@@ -70,7 +71,7 @@ public class HTGRTests {
 		PebbleBedBlockEntity te = bed(h, new BlockPos(4, 2, 4), 0);
 		te.getInventory().setStackInSlot(0, new ItemStack(ReactorItems.PELLET.get()));
 		te.getInventory().setStackInSlot(46, new ItemStack(ReactorItems.OLD_PELLET.get()));
-		var out = te.getItemHandler(net.minecraft.core.Direction.DOWN);
+		var out = te.getItemHandler(Direction.DOWN);
 		h.assertTrue(out.extractItem(46, 1, false).is(ReactorItems.OLD_PELLET.get()), "spent pebble not removable");
 		h.assertTrue(out.extractItem(5, 1, false).isEmpty(), "middle slot removable");
 		h.succeedWhen(() -> h.assertTrue(!out.extractItem(0, 1, false).isEmpty(), "first slot never removable"));
@@ -81,7 +82,7 @@ public class HTGRTests {
 	public static void co2HeaterMakesHotCO2(GameTestHelper h) {
 		h.setBlock(new BlockPos(4, 2, 4), ReactorBlocks.CO2_HEATER.get());
 		CO2HeaterBlockEntity te = (CO2HeaterBlockEntity)h.getBlockEntity(new BlockPos(4, 2, 4));
-		te.fill(net.minecraft.core.Direction.DOWN, new FluidStack(ReactorFluids.get("co2"), 4000), IFluidHandler.FluidAction.EXECUTE);
+		te.fill(Direction.DOWN, new FluidStack(ReactorFluids.get("co2"), 4000), IFluidHandler.FluidAction.EXECUTE);
 		te.setTemperature(900);
 		h.succeedWhen(() -> h.assertTrue(te.getOutputTank().getFluidAmount() >= 100 && te.getOutputTank().getFluid().getFluid().isSame(ReactorFluids.get("hot_co2")),
 				"no hot CO2 at "+te.getTemperature()+" C"));

@@ -23,6 +23,8 @@ import reika.rotarycraft.content.blockentity.BevelGearBlockEntity;
 import reika.rotarycraft.content.blockentity.GearboxBlockEntity;
 import reika.rotarycraft.content.blockentity.ReservoirBlockEntity;
 import reika.rotarycraft.content.blockentity.engine.EngineBlockEntity;
+import reika.rotarycraft.content.piping.PipeConnector;
+import reika.rotarycraft.content.piping.PipeType;
 import reika.rotarycraft.content.piping.PipingBlockEntity;
 import reika.rotarycraft.registry.GearboxTypes;
 import reika.rotarycraft.registry.RotaryBlocks;
@@ -107,9 +109,9 @@ public class PressurizerTests {
 					"pipe: "+pipe.getFluidType()+" "+pipe.getFluidLevel()+" mB");
 			h.assertTrue(res.getFluid() != null && res.getFluid().isSame(ReactorFluids.get("ammonia")) && res.getFluidAmount() == 4500,
 					"reservoir: "+res.getFluid()+" "+res.getFluidAmount()+" mB");
-			h.assertTrue(te.canConnectToPipeOnSide(reika.rotarycraft.content.piping.PipeType.PIPE, Direction.UP)
-					&& te.canConnectToPipeOnSide(reika.rotarycraft.content.piping.PipeType.PIPE, Direction.NORTH)
-					&& !te.canConnectToPipeOnSide(reika.rotarycraft.content.piping.PipeType.PIPE, Direction.DOWN), "pipe sides");
+			h.assertTrue(te.canConnectToPipeOnSide(PipeType.PIPE, Direction.UP)
+					&& te.canConnectToPipeOnSide(PipeType.PIPE, Direction.NORTH)
+					&& !te.canConnectToPipeOnSide(PipeType.PIPE, Direction.DOWN), "pipe sides");
 		});
 	}
 
@@ -127,8 +129,8 @@ public class PressurizerTests {
 		h.assertTrue(te.fill(Direction.UP, new FluidStack(Fluids.WATER, 1000), IFluidHandler.FluidAction.EXECUTE) == 0, "took plain water");
 		h.assertTrue(te.drain(Direction.NORTH, 1000, IFluidHandler.FluidAction.EXECUTE).isEmpty(), "drained from an empty pressurizer");
 		h.assertTrue(te.fill(Direction.UP, lpw, IFluidHandler.FluidAction.EXECUTE) == ReactorPumpBlockEntity.CAPACITY, "input capacity");
-		h.assertTrue(te.getFlowForSide(Direction.UP) == reika.rotarycraft.content.piping.PipeConnector.Flow.INPUT
-				&& te.getFlowForSide(Direction.EAST) == reika.rotarycraft.content.piping.PipeConnector.Flow.NONE, "pipe flows");
+		h.assertTrue(te.getFlowForSide(Direction.UP) == PipeConnector.Flow.INPUT
+				&& te.getFlowForSide(Direction.EAST) == PipeConnector.Flow.NONE, "pipe flows");
 		h.runAtTickTime(10, () -> {
 			h.assertTrue(te.getTank().getFluidAmount() == ReactorPumpBlockEntity.CAPACITY && te.getOutputTank().isEmpty(), "converted without power");
 			h.succeed();

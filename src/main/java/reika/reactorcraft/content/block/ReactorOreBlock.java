@@ -8,9 +8,12 @@ import java.util.List;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
@@ -34,7 +37,7 @@ public class ReactorOreBlock extends Block {
 		this.ore = ore;
 	}
 
-	static int level(LootParams.Builder params, net.minecraft.resources.ResourceKey<net.minecraft.world.item.enchantment.Enchantment> ench) {
+	static int level(LootParams.Builder params, ResourceKey<Enchantment> ench) {
 		ItemStack tool = params.getOptionalParameter(LootContextParams.TOOL);
 		if (tool == null || tool.isEmpty())
 			return 0;
@@ -70,6 +73,6 @@ public class ReactorOreBlock extends Block {
 	protected void spawnAfterBreak(BlockState state, ServerLevel world, BlockPos pos, ItemStack tool, boolean dropExperience) {
 		super.spawnAfterBreak(state, world, pos, tool, dropExperience);
 		if (dropExperience && !ore.dropsSelf() && world.random.nextFloat() < ore.xpDropped)
-			this.tryDropExperience(world, pos, tool, net.minecraft.util.valueproviders.ConstantInt.of(1)); //none with silk touch
+			this.tryDropExperience(world, pos, tool, ConstantInt.of(1)); //none with silk touch
 	}
 }

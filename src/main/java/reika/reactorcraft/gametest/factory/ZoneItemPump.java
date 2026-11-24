@@ -53,7 +53,7 @@ public class ZoneItemPump {
 			p.place(new BlockPos(x, 2, 5), RotaryBlocks.FUEL_LINE.get(), Direction.EAST);
 		p.placeSneaking(new BlockPos(6, 3, 5), new ItemStack(RotaryBlocks.GAS_ENGINE.get()), Direction.EAST); //drives west into the pump
 		BlockPos pump = new BlockPos(5, 3, 5), from = new BlockPos(5, 3, 6), to = new BlockPos(5, 3, 4);
-		p.place(new BlockPos(5, 2, 5), net.minecraft.world.item.Items.CHEST, Direction.EAST); //support under the pump
+		p.place(new BlockPos(5, 2, 5), Items.CHEST, Direction.EAST); //support under the pump
 		p.placeSneaking(pump, new ItemStack(RotaryBlocks.BLOWER.get()), Direction.NORTH);
 		BlowerBlockEntity te = (BlowerBlockEntity)h.getBlockEntity(pump);
 		h.assertTrue(te.getFacingDir() == Direction.NORTH, "pump meta "+te.getBlockMetadata()+" faces "+te.getFacingDir());

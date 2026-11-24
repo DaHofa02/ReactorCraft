@@ -6,6 +6,7 @@ package reika.reactorcraft.powergen;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -14,8 +15,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
@@ -124,7 +127,7 @@ public class ReactorGeneratorBlockEntity extends RotaryCraftBlockEntity implemen
 
 		if (power > 0 && !world.isClientSide) {
 			Direction write = this.getFacing().getOpposite();
-			java.util.function.Supplier<net.minecraft.sounds.SoundEvent> rs = null;
+			Supplier<SoundEvent> rs = null;
 			int len = 1;
 			switch (mode) {
 				case RF -> {
@@ -389,7 +392,7 @@ public class ReactorGeneratorBlockEntity extends RotaryCraftBlockEntity implemen
 	}
 
 	@Override
-	public void getAllOutputs(Collection<net.minecraft.world.level.block.entity.BlockEntity> c, Direction dir) {
+	public void getAllOutputs(Collection<BlockEntity> c, Direction dir) {
 		c.add(this.getAdjacentTileEntity(this.getFacing().getOpposite()));
 	}
 

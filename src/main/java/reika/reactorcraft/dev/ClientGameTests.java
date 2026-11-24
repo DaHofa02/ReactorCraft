@@ -32,6 +32,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import reika.reactorcraft.ReactorCraft;
 
+import java.io.IOException;
+
 @EventBusSubscriber(modid = ReactorCraft.MOD_ID)
 public final class ClientGameTests {
 
@@ -78,7 +80,7 @@ public final class ClientGameTests {
 			try {
 				Files.writeString(Path.of("gametest_result.txt"), sb.toString());
 			}
-			catch (java.io.IOException ex) {
+			catch (IOException ex) {
 				LOGGER.error("could not write gametest_result.txt", ex);
 			}
 			finished = true;

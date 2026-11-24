@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -22,11 +23,19 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import reika.reactorcraft.ReactorCraft;
 import reika.reactorcraft.content.entity.RadiationEntity;
+import reika.reactorcraft.content.item.GeigerCounterItem;
 import reika.reactorcraft.content.item.IronFinderItem;
 import reika.reactorcraft.content.item.RadiationCleanerItem;
 import reika.reactorcraft.radiation.RadiationIntensity;
+import reika.reactorcraft.registry.ReactorBlocks;
 import reika.reactorcraft.registry.ReactorComponents;
 import reika.reactorcraft.registry.ReactorItems;
+import reika.reactorcraft.registry.ReactorOres;
+
+import reika.rotarycraft.content.blockentity.WorktableBlockEntity;
+import reika.rotarycraft.content.item.CoilItem;
+import reika.rotarycraft.registry.RotaryBlocks;
+import reika.rotarycraft.registry.RotaryItems;
 
 @GameTestHolder(ReactorCraft.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -46,7 +55,7 @@ public class ToolTests {
 		ReactorItems.CLEANER.get().use(h.getLevel(), ep, InteractionHand.MAIN_HAND);
 		var hit = ep.pick(5, 1F, true);
 		h.assertTrue(RadiationCleanerItem.getWater(is) == 1000, "water "+RadiationCleanerItem.getWater(is)+", hit "+hit.getType()+" "+hit.getLocation()
-				+(hit instanceof net.minecraft.world.phys.BlockHitResult b ? " "+b.getBlockPos()+" "+h.getLevel().getBlockState(b.getBlockPos()) : "")+", eye "+ep.getEyePosition()+", rot "+ep.getXRot()+"/"+ep.getYRot());
+				+(hit instanceof BlockHitResult b ? " "+b.getBlockPos()+" "+h.getLevel().getBlockState(b.getBlockPos()) : "")+", eye "+ep.getEyePosition()+", rot "+ep.getXRot()+"/"+ep.getYRot());
 		h.assertTrue(h.getBlockState(new BlockPos(4, 1, 6)).isAir(), "source not taken: "+h.getBlockState(new BlockPos(4, 1, 6)));
 		h.succeed();
 	}
@@ -85,7 +94,7 @@ public class ToolTests {
 		h.setBlock(new BlockPos(2, 1, 2), Blocks.IRON_ORE);
 		h.setBlock(new BlockPos(3, 1, 2), Blocks.DEEPSLATE_IRON_ORE);
 		h.setBlock(new BlockPos(4, 1, 2), Blocks.REDSTONE_ORE);
-		h.setBlock(new BlockPos(5, 1, 2), reika.reactorcraft.registry.ReactorBlocks.ore(reika.reactorcraft.registry.ReactorOres.MAGNETITE).get());
+		h.setBlock(new BlockPos(5, 1, 2), ReactorBlocks.ore(ReactorOres.MAGNETITE).get());
 		h.setBlock(new BlockPos(6, 1, 2), Blocks.GOLD_ORE);
 		h.setBlock(new BlockPos(7, 1, 2), Blocks.COAL_ORE);
 		Player ep = h.makeMockPlayer(GameType.SURVIVAL);
@@ -100,14 +109,14 @@ public class ToolTests {
 	/** A Geiger counter and a wound spring (500 kJ) alone in the RotaryCraft worktable: they swap charges (counter 500, spring 0). */
 	@GameTest(template = PLATFORM, timeoutTicks = 20)
 	public static void worktableChargesTool(GameTestHelper h) {
-		h.setBlock(new BlockPos(4, 1, 4), reika.rotarycraft.registry.RotaryBlocks.WORKTABLE.get());
-		var wt = (reika.rotarycraft.content.blockentity.WorktableBlockEntity)h.getBlockEntity(new BlockPos(4, 1, 4));
+		h.setBlock(new BlockPos(4, 1, 4), RotaryBlocks.WORKTABLE.get());
+		var wt = (WorktableBlockEntity)h.getBlockEntity(new BlockPos(4, 1, 4));
 		wt.getInventory().setStackInSlot(0, new ItemStack(ReactorItems.GEIGER.get()));
-		wt.getInventory().setStackInSlot(4, reika.rotarycraft.content.item.CoilItem.withCharge(new ItemStack(reika.rotarycraft.registry.RotaryItems.SPRING.get()), 500));
+		wt.getInventory().setStackInSlot(4, CoilItem.withCharge(new ItemStack(RotaryItems.SPRING.get()), 500));
 		h.runAtTickTime(10, () -> {
 			ItemStack tool = wt.getInventory().getStackInSlot(9), coil = wt.getInventory().getStackInSlot(10);
-			h.assertTrue(tool.is(ReactorItems.GEIGER.get()) && reika.reactorcraft.content.item.GeigerCounterItem.getCharge(tool) == 500, "tool "+tool);
-			h.assertTrue(coil.is(reika.rotarycraft.registry.RotaryItems.SPRING.get()) && reika.rotarycraft.content.item.CoilItem.getCharge(coil) == 0, "coil "+coil);
+			h.assertTrue(tool.is(ReactorItems.GEIGER.get()) && GeigerCounterItem.getCharge(tool) == 500, "tool "+tool);
+			h.assertTrue(coil.is(RotaryItems.SPRING.get()) && CoilItem.getCharge(coil) == 0, "coil "+coil);
 			h.succeed();
 		});
 	}

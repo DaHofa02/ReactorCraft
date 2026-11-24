@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 
 import com.mojang.serialization.Codec;
 
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -36,8 +37,8 @@ public final class ReactorComponents {
 			b -> b.persistent(Codec.intRange(0, Integer.MAX_VALUE)).networkSynchronized(ByteBufCodecs.VAR_INT));
 
 	/** CPU linked to a CPU remote control (original NBT cx/cy/cz and dimension id). */
-	public static final Supplier<DataComponentType<net.minecraft.core.GlobalPos>> LINKED_CPU = COMPONENTS.registerComponentType("linked_cpu",
-			b -> b.persistent(net.minecraft.core.GlobalPos.CODEC).networkSynchronized(net.minecraft.core.GlobalPos.STREAM_CODEC));
+	public static final Supplier<DataComponentType<GlobalPos>> LINKED_CPU = COMPONENTS.registerComponentType("linked_cpu",
+			b -> b.persistent(GlobalPos.CODEC).networkSynchronized(GlobalPos.STREAM_CODEC));
 
 	private ReactorComponents() {}
 }

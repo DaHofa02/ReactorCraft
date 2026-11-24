@@ -29,6 +29,8 @@ import reika.reactorcraft.reactor.CpuBlockEntity;
 import reika.reactorcraft.reactor.LinkableReactorCore;
 import reika.reactorcraft.registry.ReactorComponents;
 
+import reika.rotarycraft.api.interfaces.ChargeableTool;
+
 /**
  * Original: Reika.ReactorCraft.Items.ItemRemoteControl (ChargeableTool; the charge in kJ was the item damage, here a component) - used
  * on a reactor CPU it links to it; used on a fuel core or control rod afterwards it adds that part to the linked CPU's temperature
@@ -36,7 +38,7 @@ import reika.reactorcraft.registry.ReactorComponents;
  * kJ the original also worked across dimensions; here the CPU must be in the player's dimension (a client cannot show a block entity
  * of another dimension). Charged in the RotaryCraft worktable with a wound coil (not ported yet; creative has a charged one).
  */
-public class RemoteControlItem extends Item implements reika.rotarycraft.api.interfaces.ChargeableTool {
+public class RemoteControlItem extends Item implements ChargeableTool {
 
 	public static final int CREATIVE_CHARGE = 32000;
 

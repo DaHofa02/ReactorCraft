@@ -8,6 +8,7 @@ import java.util.List;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
@@ -15,6 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -60,8 +62,8 @@ public class ZoneWeapons {
 		DomeBlockEntity d = (DomeBlockEntity)h.getBlockEntity(new BlockPos(4, 3, 4));
 		h.succeedWhen(() -> {
 			h.assertTrue(d.getRange() > 0, "no dome: "+d.getPower()+" W");
-			Factory.assertBuilt(h, List.of(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(dome).toString()), new BlockPos(0, 2, 0), new BlockPos(8, 4, 8));
-			h.setBlock(new BlockPos(4, 3, 4), net.minecraft.world.level.block.Blocks.AIR);
+			Factory.assertBuilt(h, List.of(BuiltInRegistries.BLOCK.getKey(dome).toString()), new BlockPos(0, 2, 0), new BlockPos(8, 4, 8));
+			h.setBlock(new BlockPos(4, 3, 4), Blocks.AIR);
 			p.leave();
 		});
 	}

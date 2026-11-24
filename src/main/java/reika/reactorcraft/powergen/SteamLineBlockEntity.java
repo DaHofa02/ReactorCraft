@@ -15,9 +15,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
+import reika.reactorcraft.ReactorConfig;
 import reika.reactorcraft.reactor.ReactorBoilerBlockEntity;
 import reika.reactorcraft.reactor.ReactorType;
 import reika.reactorcraft.registry.ReactorBlockEntities;
+import reika.rotarycraft.api.interfaces.PumpablePipe;
+import reika.rotarycraft.content.blockentity.PipePumpBlockEntity;
 import reika.rotarycraft.content.blockentity.RotaryCraftBlockEntity;
 
 /**
@@ -27,7 +30,7 @@ import reika.rotarycraft.content.blockentity.RotaryCraftBlockEntity;
  * original targets - high pressure turbine, steam diffuser, pipe pump - are not ported yet). The pressure limit option (default
  * unlimited) is not ported.
  */
-public class SteamLineBlockEntity extends RotaryCraftBlockEntity implements SteamTile, reika.rotarycraft.api.interfaces.PumpablePipe {
+public class SteamLineBlockEntity extends RotaryCraftBlockEntity implements SteamTile, PumpablePipe {
 
 	private int steam;
 	private WorkingFluid fluid = WorkingFluid.EMPTY;
@@ -57,7 +60,7 @@ public class SteamLineBlockEntity extends RotaryCraftBlockEntity implements Stea
 
 	private void drawFromBoiler(Level world, BlockPos pos) {
 		if (world.getBlockEntity(pos.below()) instanceof ReactorBoilerBlockEntity te) {
-			if (steam < reika.reactorcraft.ReactorConfig.STEAMLINECAP.get() && te.getTicksExisted() > 5 && this.canTakeInWorkingFluid(te.getWorkingFluid())) {
+			if (steam < ReactorConfig.STEAMLINECAP.get() && te.getTicksExisted() > 5 && this.canTakeInWorkingFluid(te.getWorkingFluid())) {
 				fluid = te.getWorkingFluid();
 				int s = te.removeSteam();
 				steam += s;
@@ -88,7 +91,7 @@ public class SteamLineBlockEntity extends RotaryCraftBlockEntity implements Stea
 
 	private void readPipe(SteamLineBlockEntity te) {
 		int dS = te.steam-steam;
-		int room = reika.reactorcraft.ReactorConfig.STEAMLINECAP.get()-steam;
+		int room = ReactorConfig.STEAMLINECAP.get()-steam;
 		if (dS > 0 && room > 0) {
 			int amt = Math.min(room, dS/2+1);
 			float frac = amt/(float)te.steam;
@@ -124,7 +127,7 @@ public class SteamLineBlockEntity extends RotaryCraftBlockEntity implements Stea
 
 	/** Original canTransferTo (pipe pump): into another line with the same working fluid or none. */
 	@Override
-	public boolean canTransferTo(reika.rotarycraft.api.interfaces.PumpablePipe p, Direction dir) {
+	public boolean canTransferTo(PumpablePipe p, Direction dir) {
 		return p instanceof SteamLineBlockEntity te && (te.fluid == WorkingFluid.EMPTY || te.fluid == fluid);
 	}
 
@@ -135,7 +138,7 @@ public class SteamLineBlockEntity extends RotaryCraftBlockEntity implements Stea
 
 	/** Original transferFrom (pipe pump): steam, working fluid and the matching share of the source reactor types. */
 	@Override
-	public void transferFrom(reika.rotarycraft.api.interfaces.PumpablePipe from, int amt) {
+	public void transferFrom(PumpablePipe from, int amt) {
 		SteamLineBlockEntity te = (SteamLineBlockEntity)from;
 		float frac = (float)amt/te.steam;
 		te.steam -= amt;
@@ -160,7 +163,7 @@ public class SteamLineBlockEntity extends RotaryCraftBlockEntity implements Stea
 			return true;
 		if (te instanceof SteamDiffuserBlockEntity d)
 			return d.getFacing().getOpposite() == dir;
-		if (te instanceof reika.rotarycraft.content.blockentity.PipePumpBlockEntity pump)
+		if (te instanceof PipePumpBlockEntity pump)
 			return pump.connectsOnSide(dir);
 		return te instanceof ReactorBoilerBlockEntity && dir == Direction.DOWN;
 	}

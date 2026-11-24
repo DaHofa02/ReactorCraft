@@ -13,6 +13,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.Vec3;
 
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -48,7 +49,7 @@ public class ZoneWaterfall {
 		BlockPos pos = new BlockPos(4, 2, 4);
 		p.place(pos, RotaryBlocks.SPILLWAY.get(), Direction.EAST); //looking east: takes water from the east
 		//pours the bucket looking straight down onto the pillar (a bucket aims with the player's eyes, as in ZoneUtilities)
-		net.minecraft.world.phys.Vec3 eye = net.minecraft.world.phys.Vec3.atLowerCornerOf(h.absolutePos(BlockPos.ZERO)).add(6.5, 7.5, 4.5);
+		Vec3 eye = Vec3.atLowerCornerOf(h.absolutePos(BlockPos.ZERO)).add(6.5, 7.5, 4.5);
 		p.hold(Items.WATER_BUCKET);
 		p.player.moveTo(eye.x, eye.y-p.player.getEyeHeight(), eye.z, 0, 90);
 		p.player.setYHeadRot(0);

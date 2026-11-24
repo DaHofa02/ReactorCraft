@@ -9,6 +9,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.PipeBlock;
 
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -16,8 +18,13 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import reika.reactorcraft.ReactorCraft;
+import reika.reactorcraft.content.entity.NeutronEntity;
+import reika.reactorcraft.reactor.ThoriumCoreBlockEntity;
+import reika.reactorcraft.registry.ReactorBlocks;
 import reika.reactorcraft.registry.ReactorFluids;
 import reika.reactorcraft.registry.ReactorItems;
+import reika.reactorcraft.waste.WastePipeBlockEntity;
+import reika.rotarycraft.content.blockentity.BevelGearBlockEntity;
 import reika.rotarycraft.content.blockentity.FuelEnhancerBlockEntity;
 import reika.rotarycraft.content.blockentity.engine.EngineBlockEntity;
 import reika.rotarycraft.registry.RotaryBlocks;
@@ -39,9 +46,9 @@ public class ThoriumTests {
 		eng.setBlockMetadata(0);
 		eng.addFuel(50000);
 		h.setBlock(new BlockPos(4, 1, 4), RotaryBlocks.BEVEL_GEARS.get());
-		var bev = (reika.rotarycraft.content.blockentity.BevelGearBlockEntity)h.getBlockEntity(new BlockPos(4, 1, 4));
-		bev.direction = reika.rotarycraft.content.blockentity.BevelGearBlockEntity.getDirectionMap().indexOf(
-				new reika.rotarycraft.content.blockentity.BevelGearBlockEntity.IOPair(Direction.EAST, Direction.UP));
+		var bev = (BevelGearBlockEntity)h.getBlockEntity(new BlockPos(4, 1, 4));
+		bev.direction = BevelGearBlockEntity.getDirectionMap().indexOf(
+				new BevelGearBlockEntity.IOPair(Direction.EAST, Direction.UP));
 		h.setBlock(new BlockPos(4, 2, 4), RotaryBlocks.FUEL_ENHANCER.get());
 		FuelEnhancerBlockEntity fe = (FuelEnhancerBlockEntity)h.getBlockEntity(new BlockPos(4, 2, 4));
 		fe.fill(Direction.UP, new FluidStack(ReactorFluids.get("lifbe"), 4000), IFluidHandler.FluidAction.EXECUTE);
@@ -53,9 +60,9 @@ public class ThoriumTests {
 				&& fe.getOutputTank().getFluidAmount() > 0, "no LiFBe fuel ("+fe.getOmega()+" rad/s, "+fe.getPower()+" W)"))); //the microturbine needs a while to reach speed
 	}
 
-	private static reika.reactorcraft.reactor.ThoriumCoreBlockEntity core(GameTestHelper h, BlockPos p, int fuel, int temp) {
-		h.setBlock(p, reika.reactorcraft.registry.ReactorBlocks.THORIUM_CORE.get());
-		var te = (reika.reactorcraft.reactor.ThoriumCoreBlockEntity)h.getBlockEntity(p);
+	private static ThoriumCoreBlockEntity core(GameTestHelper h, BlockPos p, int fuel, int temp) {
+		h.setBlock(p, ReactorBlocks.THORIUM_CORE.get());
+		var te = (ThoriumCoreBlockEntity)h.getBlockEntity(p);
 		te.fill(Direction.UP, new FluidStack(ReactorFluids.get("lifbe_fuel"), fuel), IFluidHandler.FluidAction.EXECUTE);
 		te.setTemperature(temp);
 		return te;
@@ -66,8 +73,8 @@ public class ThoriumTests {
 	public static void thoriumCoreReacts(GameTestHelper h) {
 		var cold = core(h, new BlockPos(2, 2, 4), 4000, 300);
 		var hot = core(h, new BlockPos(6, 2, 4), 4000, 800);
-		var n = new reika.reactorcraft.content.entity.NeutronEntity(h.getLevel(), h.absolutePos(new BlockPos(4, 2, 4)), Direction.EAST,
-				reika.reactorcraft.content.entity.NeutronEntity.NeutronType.FISSION);
+		var n = new NeutronEntity(h.getLevel(), h.absolutePos(new BlockPos(4, 2, 4)), Direction.EAST,
+				NeutronEntity.NeutronType.FISSION);
 		for (int i = 0; i < 200; i++) {
 			cold.onNeutron(n, h.getLevel(), h.absolutePos(new BlockPos(2, 2, 4)));
 			hot.onNeutron(n, h.getLevel(), h.absolutePos(new BlockPos(6, 2, 4)));
@@ -82,11 +89,11 @@ public class ThoriumTests {
 	@GameTest(template = PLATFORM, timeoutTicks = 100)
 	public static void fuelDumpDrainsHotCore(GameTestHelper h) {
 		var tc = core(h, new BlockPos(4, 3, 4), 2000, 1150);
-		h.setBlock(new BlockPos(4, 2, 4), reika.reactorcraft.registry.ReactorBlocks.FUEL_DUMP.get());
-		h.setBlock(new BlockPos(4, 1, 4), net.minecraft.world.level.block.Blocks.AIR);
+		h.setBlock(new BlockPos(4, 2, 4), ReactorBlocks.FUEL_DUMP.get());
+		h.setBlock(new BlockPos(4, 1, 4), Blocks.AIR);
 		h.succeedWhen(() -> {
 			h.assertTrue(tc.getFuelTank().getFluidAmount() < 2000, "fuel not drained");
-			h.assertBlockPresent(reika.reactorcraft.registry.ReactorBlocks.THORIUM_FUEL.get(), new BlockPos(4, 1, 4));
+			h.assertBlockPresent(ReactorBlocks.THORIUM_FUEL.get(), new BlockPos(4, 1, 4));
 		});
 	}
 
@@ -95,11 +102,11 @@ public class ThoriumTests {
 	public static void wastePipeTakesLiquidWaste(GameTestHelper h) {
 		var tc = core(h, new BlockPos(3, 2, 4), 0, 25);
 		tc.getWasteTank().fill(new FluidStack(ReactorFluids.get("nuclear_waste"), 1000), IFluidHandler.FluidAction.EXECUTE);
-		h.setBlock(new BlockPos(4, 2, 4), reika.reactorcraft.registry.ReactorBlocks.WASTE_PIPE.get());
-		h.setBlock(new BlockPos(5, 2, 4), reika.reactorcraft.registry.ReactorBlocks.WASTE_PIPE.get());
-		var pipe = (reika.reactorcraft.waste.WastePipeBlockEntity)h.getBlockEntity(new BlockPos(5, 2, 4));
+		h.setBlock(new BlockPos(4, 2, 4), ReactorBlocks.WASTE_PIPE.get());
+		h.setBlock(new BlockPos(5, 2, 4), ReactorBlocks.WASTE_PIPE.get());
+		var pipe = (WastePipeBlockEntity)h.getBlockEntity(new BlockPos(5, 2, 4));
 		h.succeedWhen(() -> {
-			h.assertTrue(h.getBlockState(new BlockPos(4, 2, 4)).getValue(net.minecraft.world.level.block.PipeBlock.WEST), "pipe not connected to the core");
+			h.assertTrue(h.getBlockState(new BlockPos(4, 2, 4)).getValue(PipeBlock.WEST), "pipe not connected to the core");
 			h.assertTrue(pipe.getFluidLevel() > 0 && tc.getWasteTank().getFluidAmount() < 1000, "waste not in the pipe");
 		});
 	}
@@ -107,13 +114,13 @@ public class ThoriumTests {
 	/** Spilled thorium fuel falls into free space and levels out (Forge finite fluid rules). */
 	@GameTest(template = PLATFORM, timeoutTicks = 200)
 	public static void thoriumFuelFlows(GameTestHelper h) {
-		h.setBlock(new BlockPos(4, 3, 4), reika.reactorcraft.registry.ReactorBlocks.THORIUM_FUEL.get().defaultBlockState());
+		h.setBlock(new BlockPos(4, 3, 4), ReactorBlocks.THORIUM_FUEL.get().defaultBlockState());
 		h.succeedWhen(() -> {
-			h.assertBlockNotPresent(reika.reactorcraft.registry.ReactorBlocks.THORIUM_FUEL.get(), new BlockPos(4, 3, 4));
+			h.assertBlockNotPresent(ReactorBlocks.THORIUM_FUEL.get(), new BlockPos(4, 3, 4));
 			int blocks = 0;
 			for (int x = 2; x <= 6; x++)
 				for (int z = 2; z <= 6; z++)
-					if (h.getBlockState(new BlockPos(x, 2, z)).is(reika.reactorcraft.registry.ReactorBlocks.THORIUM_FUEL.get()))
+					if (h.getBlockState(new BlockPos(x, 2, z)).is(ReactorBlocks.THORIUM_FUEL.get()))
 						blocks++;
 			h.assertTrue(blocks >= 4, "fuel spread to only "+blocks+" blocks");
 		});

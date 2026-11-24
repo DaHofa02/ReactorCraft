@@ -13,6 +13,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluids;
 
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -126,7 +127,7 @@ public class ZoneFuel {
 		p.mine(hearth.above(), Items.IRON_SHOVEL);
 		p.hold(Items.FLINT_AND_STEEL);
 		p.useOn(hearth, Direction.UP);
-		h.assertBlockPresent(net.minecraft.world.level.block.Blocks.FIRE, hearth.above());
+		h.assertBlockPresent(Blocks.FIRE, hearth.above());
 		DynamometerBlockEntity dyna = (DynamometerBlockEntity)h.getBlockEntity(new BlockPos(1, 3, 4));
 		h.succeedWhen(() -> {
 			h.assertTrue(dyna.omega == 512 && dyna.torque == 32, "steam engine: "+dyna.omega+" rad/s @ "+dyna.torque+" Nm");

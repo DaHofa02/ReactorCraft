@@ -5,6 +5,7 @@
  ******************************************************************************/
 package reika.reactorcraft.gametest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.core.BlockPos;
@@ -13,6 +14,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -22,6 +24,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
@@ -93,7 +96,7 @@ public class ReactorOreTests {
 				{ReactorItems.raw(ReactorItems.Raw.CALCITE).get(), ReactorItems.raw(ReactorItems.Raw.LIME).get(), 0.2F},
 		};
 		for (Object[] c : cases) {
-			ItemStack in = new ItemStack((net.minecraft.world.level.ItemLike)c[0]);
+			ItemStack in = new ItemStack((ItemLike)c[0]);
 			var r = w.getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(in), w);
 			h.assertTrue(r.isPresent(), "no smelting for "+in);
 			h.assertTrue(r.get().value().getResultItem(w.registryAccess()).is((Item)c[1]), in+" smelts into "+r.get().value().getResultItem(w.registryAccess()));
@@ -149,7 +152,7 @@ public class ReactorOreTests {
 	/** Calcite veins (12 of 4, y 32-60) in stone; fluorite only in this chunk's colour. */
 	@GameTest(template = PLATFORM, timeoutTicks = 100)
 	public static void veinsGenerate(GameTestHelper h) {
-		List<String> errors = new java.util.ArrayList<>();
+		List<String> errors = new ArrayList<>();
 		int calc = placeAndCount(h, "calcite_ore", ReactorBlocks.ore(ReactorOres.CALCITE).get(), 32, 60, errors);
 		h.assertTrue(calc > 6, "only "+calc+" calcite ore");
 		BlockPos origin = h.absolutePos(BlockPos.ZERO);
@@ -176,7 +179,7 @@ public class ReactorOreTests {
 			h.assertTrue(pick.isCorrectToolForDrops(ReactorBlocks.fluoriteOre(f).get().defaultBlockState()), f+" fluorite ore not harvestable");
 		for (Block b : List.of(ReactorBlocks.CALCITE_BLOCK.get(), ReactorBlocks.CONCRETE.get(), ReactorBlocks.GRAPHITE_BLOCK.get(), ReactorBlocks.FUEL_ROD.get(),
 				ReactorBlocks.CPU.get(), ReactorBlocks.CONTROL_ROD.get()))
-			h.assertTrue(b.defaultBlockState().is(net.minecraft.tags.BlockTags.MINEABLE_WITH_PICKAXE), b+" not in the pickaxe tag");
+			h.assertTrue(b.defaultBlockState().is(BlockTags.MINEABLE_WITH_PICKAXE), b+" not in the pickaxe tag");
 		h.succeed();
 	}
 }

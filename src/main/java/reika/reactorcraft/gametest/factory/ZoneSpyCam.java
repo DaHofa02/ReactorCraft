@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -19,6 +20,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import reika.reactorcraft.ReactorCraft;
+import reika.rotarycraft.content.blockentity.ScreenBlockEntity;
 import reika.rotarycraft.content.blockentity.SpyCamBlockEntity;
 import reika.rotarycraft.content.item.CoilItem;
 import reika.rotarycraft.content.menu.SpyCamViewMenu;
@@ -58,7 +60,7 @@ public class ZoneSpyCam {
 		Factory.takeExactly(p, chest, RotaryItems.SPRING.get(), 1);
 		Factory.takeExactly(p, chest, Items.DIRT, 2);
 		Factory.takeExactly(p, chest, Items.IRON_SHOVEL, 1);
-		for (var dye : new net.minecraft.world.item.Item[] {Items.RED_DYE, Items.GREEN_DYE, Items.BLUE_DYE})
+		for (var dye : new Item[] {Items.RED_DYE, Items.GREEN_DYE, Items.BLUE_DYE})
 			Factory.takeExactly(p, chest, dye, 2);
 		for (int x = 8; x >= 6; x--)
 			p.place(new BlockPos(x, 2, 5), RotaryBlocks.FUEL_LINE.get(), Direction.EAST);
@@ -93,7 +95,7 @@ public class ZoneSpyCam {
 			finally {
 				p.player.setShiftKeyDown(false);
 			}
-			h.assertTrue(p.player.containerMenu instanceof SpyCamViewMenu m && m.tile == cam, "no camera view: "+p.player.containerMenu+"; screen "+((reika.rotarycraft.content.blockentity.ScreenBlockEntity)h.getBlockEntity(screen)).getPower()+" W, runs "+((reika.rotarycraft.content.blockentity.ScreenBlockEntity)h.getBlockEntity(screen)).canRun()+", camera "+((reika.rotarycraft.content.blockentity.ScreenBlockEntity)h.getBlockEntity(screen)).findCamera());
+			h.assertTrue(p.player.containerMenu instanceof SpyCamViewMenu m && m.tile == cam, "no camera view: "+p.player.containerMenu+"; screen "+((ScreenBlockEntity)h.getBlockEntity(screen)).getPower()+" W, runs "+((ScreenBlockEntity)h.getBlockEntity(screen)).canRun()+", camera "+((ScreenBlockEntity)h.getBlockEntity(screen)).findCamera());
 			p.closeMenu();
 			Factory.assertBuilt(h, BLOCKS, new BlockPos(0, 2, 0), new BlockPos(8, 4, 8));
 			p.leave();

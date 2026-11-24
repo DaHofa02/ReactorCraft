@@ -18,6 +18,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.Fluid;
 
 import reika.reactorcraft.content.entity.NeutronEntity;
@@ -38,8 +39,8 @@ import reika.rotarycraft.content.entity.DischargeEntity;
  */
 public class MagneticPipeBlockEntity extends ReactorPipingBlockEntity implements Shockable, NeutronTile {
 
-	public static final net.minecraft.world.level.block.state.properties.BooleanProperty CHARGED =
-			net.minecraft.world.level.block.state.properties.BooleanProperty.create("charged");
+	public static final BooleanProperty CHARGED =
+			BooleanProperty.create("charged");
 
 	private int charge;
 

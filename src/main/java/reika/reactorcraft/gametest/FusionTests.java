@@ -25,6 +25,7 @@ import reika.reactorcraft.content.entity.NeutronEntity;
 import reika.reactorcraft.fusion.FusionEntity;
 import reika.reactorcraft.fusion.FusionHeaterBlockEntity;
 import reika.reactorcraft.fusion.FusionInjectorBlockEntity;
+import reika.reactorcraft.fusion.FusionMachineBlock;
 import reika.reactorcraft.fusion.FusionMultiBlock;
 import reika.reactorcraft.fusion.FusionStructures;
 import reika.reactorcraft.fusion.MagneticPipeBlockEntity;
@@ -121,7 +122,7 @@ public class FusionTests {
 		BlockPos inj = h.absolutePos(new BlockPos(4, 3, 4));
 		FusionStructures.injectorFrame(w, inj, Direction.EAST);
 		FusionInjectorBlockEntity te = (FusionInjectorBlockEntity)w.getBlockEntity(inj);
-		reika.reactorcraft.fusion.FusionMachineBlock.setInjectorFacing(w, te, Direction.NORTH);
+		FusionMachineBlock.setInjectorFacing(w, te, Direction.NORTH);
 		BlockPos trig = FusionStructures.injectorTrigger(inj, Direction.EAST);
 		h.assertTrue(FusionMultiBlock.checkInjector(w, trig), "injector frame not recognised");
 		FusionMultiBlock.formInjector(w, trig);

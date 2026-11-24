@@ -15,6 +15,8 @@ import reika.reactorcraft.registry.ReactorBlockEntities;
 import reika.reactorcraft.registry.ReactorSounds;
 import reika.rotarycraft.lib.math.RandomHelper;
 
+import javax.annotation.Nullable;
+
 /**
  * Original: Reika.ReactorCraft.TileEntities.Fission.TileEntityControlRod - the rods move one step per tick between -5 (inserted) and 20
  * (retracted), a SCRAM drops them 7 per tick. Only fully inserted rods absorb neutrons (60 %). Toggling one rod by hand (CPU GUI) toggles
@@ -115,7 +117,7 @@ public class ControlRodBlockEntity extends ReactorBlockEntity implements Linkabl
 	}
 
 	/** Original CPU coordinate set by the CPU remote control. */
-	@javax.annotation.Nullable
+	@Nullable
 	private BlockPos cpu;
 
 	@Override

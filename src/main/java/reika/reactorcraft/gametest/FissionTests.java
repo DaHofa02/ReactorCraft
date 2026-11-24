@@ -18,6 +18,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import reika.reactorcraft.ReactorCraft;
 import reika.reactorcraft.content.block.FluoriteBlock;
+import reika.reactorcraft.content.block.ReactorCoreBlock;
 import reika.reactorcraft.content.entity.NeutronEntity;
 import reika.reactorcraft.reactor.FuelRodBlockEntity;
 import reika.reactorcraft.reactor.LiquidStates;
@@ -100,7 +101,7 @@ public class FissionTests {
 		player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
 		h.useBlock(p, player);
 		h.assertTrue(w.getLiquidState() == LiquidStates.WATER && player.getMainHandItem().is(Items.BUCKET), "fill: "+w.getLiquidState());
-		h.assertBlockProperty(p, reika.reactorcraft.content.block.ReactorCoreBlock.STATE, 1);
+		h.assertBlockProperty(p, ReactorCoreBlock.STATE, 1);
 		h.useBlock(p, player);
 		h.assertTrue(w.getLiquidState() == LiquidStates.EMPTY && player.getMainHandItem().is(Items.WATER_BUCKET), "empty: "+w.getLiquidState());
 		h.succeed();

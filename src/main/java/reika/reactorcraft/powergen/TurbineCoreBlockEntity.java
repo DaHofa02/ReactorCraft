@@ -16,7 +16,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -77,7 +79,7 @@ public class TurbineCoreBlockEntity extends RotaryCraftBlockEntity implements Sh
 		this(ReactorBlockEntities.TURBINE_CORE.get(), pos, state);
 	}
 
-	protected TurbineCoreBlockEntity(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
+	protected TurbineCoreBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
 
@@ -405,7 +407,7 @@ public class TurbineCoreBlockEntity extends RotaryCraftBlockEntity implements Sh
 
 	/** Original ReikaWorldHelper.softBlocks. */
 	private static boolean soft(BlockState s) {
-		return s.isAir() || !s.getFluidState().isEmpty() || s.canBeReplaced() || s.is(net.minecraft.world.level.block.Blocks.VINE);
+		return s.isAir() || !s.getFluidState().isEmpty() || s.canBeReplaced() || s.is(Blocks.VINE);
 	}
 
 	protected double getRadius() {

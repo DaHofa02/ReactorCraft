@@ -13,6 +13,7 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 
@@ -44,7 +45,7 @@ public abstract class IntermediateBoilerBlockEntity extends ReactorBlockEntity i
 	protected final FluidTank output = new FluidTank(CAPACITY);
 	private int timer;
 
-	protected IntermediateBoilerBlockEntity(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
+	protected IntermediateBoilerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
 

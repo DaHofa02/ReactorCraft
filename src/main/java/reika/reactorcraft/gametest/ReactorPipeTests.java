@@ -4,6 +4,7 @@
 package reika.reactorcraft.gametest;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.level.block.PipeBlock;
@@ -15,6 +16,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import reika.reactorcraft.ReactorCraft;
 import reika.reactorcraft.content.piping.GasDuctBlockEntity;
 import reika.reactorcraft.content.piping.HeatPipeBlockEntity;
+import reika.reactorcraft.reactor.PebbleBedBlockEntity;
 import reika.reactorcraft.reactor.ReactorBoilerBlockEntity;
 import reika.reactorcraft.reactor.WaterCellBlockEntity;
 import reika.reactorcraft.registry.ReactorBlocks;
@@ -89,8 +91,8 @@ public class ReactorPipeTests {
 		GasDuctBlockEntity a = (GasDuctBlockEntity)h.getBlockEntity(new BlockPos(2, 2, 2)), b = (GasDuctBlockEntity)h.getBlockEntity(new BlockPos(6, 2, 2));
 		WastePipeBlockEntity w = (WastePipeBlockEntity)h.getBlockEntity(new BlockPos(6, 2, 6));
 		a.setFluid(ReactorFluids.get("deuterium"), 100);
-		h.assertTrue(a.canTransferTo(b, net.minecraft.core.Direction.EAST), "gas duct cannot pump into a gas duct");
-		h.assertTrue(!a.canTransferTo(w, net.minecraft.core.Direction.EAST), "gas duct can pump into a waste pipe");
+		h.assertTrue(a.canTransferTo(b, Direction.EAST), "gas duct cannot pump into a gas duct");
+		h.assertTrue(!a.canTransferTo(w, Direction.EAST), "gas duct can pump into a waste pipe");
 		b.transferFrom(a, 100);
 		h.assertTrue(b.getFluidLevel() == 100 && b.getFluidType() == ReactorFluids.get("deuterium"), "pumped duct holds "+b.getFluidLevel()+" of "+b.getFluidType());
 		h.assertTrue(a.getFluidLevel() == 0 && a.getFluidType() == null, "source duct holds "+a.getFluidLevel()+" of "+a.getFluidType());
@@ -163,7 +165,7 @@ public class ReactorPipeTests {
 		h.setBlock(pipe2, ReactorBlocks.HEAT_PIPE.get());
 		HeatPipeBlockEntity hp = (HeatPipeBlockEntity)h.getBlockEntity(pipe), hp2 = (HeatPipeBlockEntity)h.getBlockEntity(pipe2);
 		ReactorBoilerBlockEntity[] rb = new ReactorBoilerBlockEntity[1];
-		reika.reactorcraft.reactor.PebbleBedBlockEntity[] pb = new reika.reactorcraft.reactor.PebbleBedBlockEntity[1];
+		PebbleBedBlockEntity[] pb = new PebbleBedBlockEntity[1];
 		int[] tamb = new int[2];
 		double[] q = new double[2];
 		h.runAtTickTime(4, () -> {
@@ -174,7 +176,7 @@ public class ReactorPipeTests {
 			q[0] = 4*100.5*rb[0].heatEnergyPerDegree();
 			hp.setHeatEnergy(hp.getHeatEnergy()+q[0]);
 			h.setBlock(bed, ReactorBlocks.PEBBLE_BED.get());
-			pb[0] = (reika.reactorcraft.reactor.PebbleBedBlockEntity)h.getBlockEntity(bed);
+			pb[0] = (PebbleBedBlockEntity)h.getBlockEntity(bed);
 			tamb[1] = pb[0].getAmbientTemperature();
 			pb[0].setTemperature(tamb[1]);
 			q[1] = hp2.getHeatEnergy();

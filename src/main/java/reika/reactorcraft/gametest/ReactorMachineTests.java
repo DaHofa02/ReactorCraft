@@ -8,19 +8,33 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Fluids;
 
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import reika.reactorcraft.ReactorCraft;
 import reika.reactorcraft.content.blockentity.HeavyPumpBlockEntity;
+import reika.reactorcraft.content.blockentity.IsoCentrifugeBlockEntity;
+import reika.reactorcraft.content.blockentity.SynthesizerBlockEntity;
+import reika.reactorcraft.content.blockentity.UProcessorBlockEntity;
+import reika.reactorcraft.registry.FluoriteTypes;
 import reika.reactorcraft.registry.ReactorBlocks;
 import reika.reactorcraft.registry.ReactorFluids;
+import reika.reactorcraft.registry.ReactorItems;
 import reika.rotarycraft.content.block.GearboxBlock;
 import reika.rotarycraft.content.blockentity.BevelGearBlockEntity;
 import reika.rotarycraft.content.blockentity.GearboxBlockEntity;
 import reika.rotarycraft.content.blockentity.engine.EngineBlockEntity;
+import reika.rotarycraft.content.piping.PipeConnector;
 import reika.rotarycraft.registry.GearboxTypes;
 import reika.rotarycraft.registry.RotaryBlocks;
 
@@ -92,18 +106,18 @@ public class ReactorMachineTests {
 	public static void processorMakesUF6(GameTestHelper h) {
 		BlockPos p = new BlockPos(4, 1, 4);
 		h.setBlock(p, ReactorBlocks.PROCESSOR.get());
-		var proc = (reika.reactorcraft.content.blockentity.UProcessorBlockEntity)h.getBlockEntity(p);
+		var proc = (UProcessorBlockEntity)h.getBlockEntity(p);
 		proc.setBlockMetadata(0);
 		var inv = proc.getInventory();
-		inv.setStackInSlot(0, new net.minecraft.world.item.ItemStack(reika.reactorcraft.registry.ReactorItems.fluorite(reika.reactorcraft.registry.FluoriteTypes.GREEN).get(), 4));
-		inv.setStackInSlot(1, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.WATER_BUCKET));
-		inv.setStackInSlot(2, new net.minecraft.world.item.ItemStack(reika.reactorcraft.registry.ReactorItems.ingot(reika.reactorcraft.registry.ReactorItems.Ingot.URANIUM).get(), 2));
+		inv.setStackInSlot(0, new ItemStack(ReactorItems.fluorite(FluoriteTypes.GREEN).get(), 4));
+		inv.setStackInSlot(1, new ItemStack(Items.WATER_BUCKET));
+		inv.setStackInSlot(2, new ItemStack(ReactorItems.ingot(ReactorItems.Ingot.URANIUM).get(), 2));
 		h.runAtTickTime(10, () -> {
-			h.assertTrue(proc.getInputTank().getFluidAmount() == 1000 && inv.getStackInSlot(1).is(net.minecraft.world.item.Items.BUCKET), "bucket not emptied: "+proc.getInputTank().getFluidAmount());
+			h.assertTrue(proc.getInputTank().getFluidAmount() == 1000 && inv.getStackInSlot(1).is(Items.BUCKET), "bucket not emptied: "+proc.getInputTank().getFluidAmount());
 			//as in the original, the process only runs while the input tank holds its fluid: top it up through a side
-			var side = h.getLevel().getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK, h.absolutePos(p), Direction.NORTH);
-			h.assertTrue(side.fill(new net.neoforged.neoforge.fluids.FluidStack(net.minecraft.world.level.material.Fluids.WATER, 2000),
-					net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE) == 2000, "side does not take water");
+			var side = h.getLevel().getCapability(Capabilities.FluidHandler.BLOCK, h.absolutePos(p), Direction.NORTH);
+			h.assertTrue(side.fill(new FluidStack(Fluids.WATER, 2000),
+					IFluidHandler.FluidAction.EXECUTE) == 2000, "side does not take water");
 		});
 		h.runAtTickTime(95, () -> {
 			h.assertTrue(proc.getIntermediateTank().getFluidAmount() == 250 && proc.getInputTank().getFluidAmount() == 2750 && inv.getStackInSlot(0).getCount() == 3,
@@ -114,10 +128,10 @@ public class ReactorMachineTests {
 			h.assertTrue(proc.getOutputTank().getFluidAmount() == 1000 && proc.getOutputTank().getFluid().getFluid().isSame(ReactorFluids.get("uranium_hexafluoride")),
 					"UF6 "+proc.getOutputTank().getFluidAmount());
 			h.assertTrue(inv.getStackInSlot(2).getCount() == 1, "ingots left "+inv.getStackInSlot(2).getCount());
-			var front = h.getLevel().getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK, h.absolutePos(p), Direction.WEST);
-			h.assertTrue(front != null && front.drain(100, net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.SIMULATE).getAmount() == 100, "front does not give UF6");
-			h.assertTrue(proc.getFlowForSide(Direction.NORTH) == reika.rotarycraft.content.piping.PipeConnector.Flow.INPUT
-					&& proc.getFlowForSide(Direction.WEST) == reika.rotarycraft.content.piping.PipeConnector.Flow.OUTPUT, "pipe sides");
+			var front = h.getLevel().getCapability(Capabilities.FluidHandler.BLOCK, h.absolutePos(p), Direction.WEST);
+			h.assertTrue(front != null && front.drain(100, IFluidHandler.FluidAction.SIMULATE).getAmount() == 100, "front does not give UF6");
+			h.assertTrue(proc.getFlowForSide(Direction.NORTH) == PipeConnector.Flow.INPUT
+					&& proc.getFlowForSide(Direction.WEST) == PipeConnector.Flow.OUTPUT, "pipe sides");
 			h.succeed();
 		});
 	}
@@ -130,17 +144,17 @@ public class ReactorMachineTests {
 	public static void synthesizerMakesAmmonia(GameTestHelper h) {
 		BlockPos p = new BlockPos(4, 1, 4);
 		h.setBlock(p, ReactorBlocks.SYNTHESIZER.get());
-		var syn = (reika.reactorcraft.content.blockentity.SynthesizerBlockEntity)h.getBlockEntity(p);
+		var syn = (SynthesizerBlockEntity)h.getBlockEntity(p);
 		int[] temp = {200};
 		h.onEachTick(() -> syn.setTemperature(temp[0]));
-		var player = h.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
-		player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.WATER_BUCKET));
+		var player = h.makeMockPlayer(GameType.SURVIVAL);
+		player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WATER_BUCKET));
 		h.useBlock(p, player);
-		h.assertTrue(syn.getInputTank().getFluidAmount() == 1000 && player.getMainHandItem().is(net.minecraft.world.item.Items.BUCKET),
+		h.assertTrue(syn.getInputTank().getFluidAmount() == 1000 && player.getMainHandItem().is(Items.BUCKET),
 				"bucket on the block: "+syn.getInputTank().getFluidAmount()+", hand "+player.getMainHandItem());
 		var inv = syn.getInventory();
-		inv.setStackInSlot(1, new net.minecraft.world.item.ItemStack(reika.reactorcraft.registry.ReactorItems.raw(reika.reactorcraft.registry.ReactorItems.Raw.LIME).get(), 2));
-		inv.setStackInSlot(2, new net.minecraft.world.item.ItemStack(reika.reactorcraft.registry.ReactorItems.raw(reika.reactorcraft.registry.ReactorItems.Raw.AMMONIUM).get(), 2));
+		inv.setStackInSlot(1, new ItemStack(ReactorItems.raw(ReactorItems.Raw.LIME).get(), 2));
+		inv.setStackInSlot(2, new ItemStack(ReactorItems.raw(ReactorItems.Raw.AMMONIUM).get(), 2));
 		h.runAtTickTime(100, () -> {
 			h.assertTrue(syn.getOutputTank().isEmpty(), "ammonia at 200 C");
 			temp[0] = 300;
@@ -175,12 +189,12 @@ public class ReactorMachineTests {
 		bev.direction = BevelGearBlockEntity.getDirectionMap().indexOf(new BevelGearBlockEntity.IOPair(Direction.EAST, Direction.UP));
 		BlockPos p = new BlockPos(4, 2, 4);
 		h.setBlock(p, ReactorBlocks.ISO_CENTRIFUGE.get());
-		var cen = (reika.reactorcraft.content.blockentity.IsoCentrifugeBlockEntity)h.getBlockEntity(p);
-		var uf6 = new net.neoforged.neoforge.fluids.FluidStack(ReactorFluids.get("uranium_hexafluoride"), 1000);
-		var side = h.getLevel().getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK, h.absolutePos(p), Direction.NORTH);
+		var cen = (IsoCentrifugeBlockEntity)h.getBlockEntity(p);
+		var uf6 = new FluidStack(ReactorFluids.get("uranium_hexafluoride"), 1000);
+		var side = h.getLevel().getCapability(Capabilities.FluidHandler.BLOCK, h.absolutePos(p), Direction.NORTH);
 		h.assertTrue(side == null, "centrifuge takes fluid from the side");
-		var top = h.getLevel().getCapability(net.neoforged.neoforge.capabilities.Capabilities.FluidHandler.BLOCK, h.absolutePos(p), Direction.UP);
-		h.assertTrue(top.fill(uf6, net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE) == 1000, "top does not take UF6");
+		var top = h.getLevel().getCapability(Capabilities.FluidHandler.BLOCK, h.absolutePos(p), Direction.UP);
+		h.assertTrue(top.fill(uf6, IFluidHandler.FluidAction.EXECUTE) == 1000, "top does not take UF6");
 		h.succeedWhen(() -> {
 			h.assertTrue(cen.getOmega() == 262144 && cen.getTorque() == 8, "centrifuge input "+cen.getOmega()+" rad/s @ "+cen.getTorque()+" Nm (engine "+eng.omega+")");
 			int dust = cen.getInventory().getStackInSlot(0).getCount()+cen.getInventory().getStackInSlot(1).getCount();

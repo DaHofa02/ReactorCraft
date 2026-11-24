@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -53,8 +54,8 @@ public class ZoneFluidEngines {
 		SimPlayer p = new SimPlayer(h, GameType.CREATIVE);
 		BlockPos eng = new BlockPos(5, 2, 4), bev = new BlockPos(4, 2, 4), dist = new BlockPos(4, 3, 4);
 		engine(h, p, eng);
-		p.place(new BlockPos(4, 2, 5), net.minecraft.world.item.Items.STONE, Direction.EAST); //something to set the distillery against
-		p.place(new BlockPos(4, 3, 5), net.minecraft.world.item.Items.STONE, Direction.EAST);
+		p.place(new BlockPos(4, 2, 5), Items.STONE, Direction.EAST); //something to set the distillery against
+		p.place(new BlockPos(4, 3, 5), Items.STONE, Direction.EAST);
 		p.placeSneaking(dist.above(0), new ItemStack(RotaryBlocks.DISTILLERY.get()), Direction.EAST);
 		p.placeSneaking(bev, new ItemStack(RotaryBlocks.BEVEL_GEARS.get()), Direction.EAST); //last: finds east -> up
 		DistilleryBlockEntity d = (DistilleryBlockEntity)h.getBlockEntity(dist);
@@ -75,7 +76,7 @@ public class ZoneFluidEngines {
 		BlockPos eng = new BlockPos(5, 2, 4), bev = new BlockPos(4, 2, 4), boil = new BlockPos(4, 3, 4), turb = new BlockPos(4, 4, 4);
 		engine(h, p, eng);
 		for (int y = 2; y <= 4; y++)
-			p.place(new BlockPos(4, y, 5), net.minecraft.world.item.Items.STONE, Direction.EAST);
+			p.place(new BlockPos(4, y, 5), Items.STONE, Direction.EAST);
 		p.placeSneaking(boil, new ItemStack(RotaryBlocks.BOILER.get()), Direction.EAST);
 		p.placeSneaking(turb, new ItemStack(RotaryBlocks.STEAM_TURBINE.get()), Direction.EAST); //steam in from below, drives west
 		p.placeSneaking(bev, new ItemStack(RotaryBlocks.BEVEL_GEARS.get()), Direction.EAST);

@@ -14,6 +14,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -77,7 +78,7 @@ public class ZoneWeather {
 			//the structure stays and the controller would set its last mode again after its cooldown: take it away
 			for (int i = 0; i < te.getInventory().getSlots(); i++)
 				te.getInventory().setStackInSlot(i, ItemStack.EMPTY);
-			h.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR);
+			h.setBlock(pos, Blocks.AIR);
 			h.getLevel().setWeatherParameters(24000, 0, false, false);
 			h.getLevel().setRainLevel(0); //otherwise the rain fades out over 100 ticks, into later tests
 			p.leave();

@@ -19,6 +19,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.InfestedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -130,7 +131,7 @@ public final class RadiationEffects {
 				world.setBlockAndUpdate(p, Blocks.COBBLESTONE.defaultBlockState());
 			else if (s.is(Blocks.GRASS_BLOCK))
 				world.setBlockAndUpdate(p, Blocks.DIRT.defaultBlockState());
-			else if (s.getBlock() instanceof net.minecraft.world.level.block.InfestedBlock ib)
+			else if (s.getBlock() instanceof InfestedBlock ib)
 				world.setBlockAndUpdate(p, ib.getHostBlock().defaultBlockState());
 		}
 		if (s.getBlock() instanceof FluoriteBlock && !s.getValue(FluoriteBlock.ACTIVATED))

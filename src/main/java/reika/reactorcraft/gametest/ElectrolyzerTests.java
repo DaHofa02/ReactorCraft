@@ -6,8 +6,10 @@ package reika.reactorcraft.gametest;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluids;
 
@@ -73,8 +75,8 @@ public class ElectrolyzerTests {
 	public static void saltNeedsHeat(GameTestHelper h) {
 		VanDeGraffBlockEntity[] vdg = new VanDeGraffBlockEntity[1];
 		ElectrolyzerBlockEntity te = setup(h, vdg);
-		te.getInventory().setStackInSlot(0, new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(
-				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("rotarycraft", "salt")), 4));
+		te.getInventory().setStackInSlot(0, new ItemStack(BuiltInRegistries.ITEM.get(
+				ResourceLocation.fromNamespaceAndPath("rotarycraft", "salt")), 4));
 		boolean[] hot = {false};
 		h.onEachTick(() -> {
 			vdg[0].setCharge(20000);

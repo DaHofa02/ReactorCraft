@@ -18,6 +18,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import reika.reactorcraft.ReactorCraft;
+import reika.rotarycraft.content.blockentity.BusControllerBlockEntity;
 import reika.rotarycraft.content.blockentity.FanBlockEntity;
 import reika.rotarycraft.content.blockentity.PowerBusBlockEntity;
 import reika.rotarycraft.gametest.SimPlayer;
@@ -25,6 +26,7 @@ import reika.rotarycraft.registry.GearboxTypes;
 import reika.rotarycraft.registry.GearboxTypes.GearPart;
 import reika.rotarycraft.registry.RotaryBlocks;
 import reika.rotarycraft.registry.RotaryFluids;
+import reika.rotarycraft.registry.RotaryItems;
 
 @GameTestHolder(ReactorCraft.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -43,7 +45,7 @@ public class ZonePowerBus {
 		SimPlayer.floor(h, 0, 0, 8, 8);
 		SimPlayer p = new SimPlayer(h, GameType.SURVIVAL);
 		BlockPos chest = new BlockPos(0, 2, 8);
-		Item gear = reika.rotarycraft.registry.RotaryItems.gearPart(GearboxTypes.STEEL, GearPart.GEAR);
+		Item gear = RotaryItems.gearPart(GearboxTypes.STEEL, GearPart.GEAR);
 		Factory.infiniteChest(h, chest, new ItemStack(RotaryBlocks.FUEL_LINE.get()), new ItemStack(RotaryBlocks.GAS_ENGINE.get()),
 				new ItemStack(RotaryBlocks.BUS_CONTROLLER.get()), new ItemStack(RotaryBlocks.POWER_BUS.get()), new ItemStack(RotaryBlocks.FAN.get()),
 				new ItemStack(Items.DIRT), new ItemStack(gear), new ItemStack(RotaryBlocks.HOSE.get()));
@@ -75,7 +77,7 @@ public class ZonePowerBus {
 		FanBlockEntity fan = (FanBlockEntity)h.getBlockEntity(fanPos);
 
 		h.succeedWhen(() -> {
-			h.assertTrue(fan.getOmega() == 512 && fan.getTorque() == 128, "fan at "+fan.getOmega()+" rad/s @ "+fan.getTorque()+" Nm; controller "+((reika.rotarycraft.content.blockentity.BusControllerBlockEntity)h.getBlockEntity(hub)).getPower()+" W, lube "+((reika.rotarycraft.content.blockentity.BusControllerBlockEntity)h.getBlockEntity(hub)).getLubricant());
+			h.assertTrue(fan.getOmega() == 512 && fan.getTorque() == 128, "fan at "+fan.getOmega()+" rad/s @ "+fan.getTorque()+" Nm; controller "+((BusControllerBlockEntity)h.getBlockEntity(hub)).getPower()+" W, lube "+((BusControllerBlockEntity)h.getBlockEntity(hub)).getLubricant());
 			Factory.assertBuilt(h, BLOCKS, new BlockPos(0, 2, 0), new BlockPos(8, 4, 8));
 			p.leave();
 		});

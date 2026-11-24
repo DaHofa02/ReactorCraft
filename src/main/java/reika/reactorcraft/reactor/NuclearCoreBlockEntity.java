@@ -13,6 +13,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.Clearable;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -31,6 +34,7 @@ import reika.reactorcraft.radiation.WasteManager;
 import reika.reactorcraft.registry.ReactorBlocks;
 import reika.reactorcraft.registry.ReactorItems;
 import reika.rotarycraft.lib.math.RandomHelper;
+import reika.rotarycraft.lib.world.AmbientTemperature;
 
 /**
  * Original: Reika.ReactorCraft.Base.TileEntityNuclearCore - 4 fuel slots (a column: slot 3 is the active one) and 8 waste slots, one
@@ -40,7 +44,7 @@ import reika.rotarycraft.lib.math.RandomHelper;
  * (explosion past 200), above 1800 C it melts down: same cores within 2 turn to corium, an explosion (8), lethal contamination
  * (radius 32) and a hydrogen explosion (7).
  */
-public abstract class NuclearCoreBlockEntity extends ReactorBlockEntity implements LinkableReactorCore, ReactorTyped, NeutronTile, Feedable, ReactorBlock, net.minecraft.world.Clearable {
+public abstract class NuclearCoreBlockEntity extends ReactorBlockEntity implements LinkableReactorCore, ReactorTyped, NeutronTile, Feedable, ReactorBlock, Clearable {
 
 	public static final int CLADDING = 800;
 	public static final int HYDROGEN = 1400;
@@ -116,7 +120,7 @@ public abstract class NuclearCoreBlockEntity extends ReactorBlockEntity implemen
 
 	private void onActivityChange(boolean active) {
 		if (level instanceof ServerLevel sl && ReactorConfig.CHUNKLOADING.get())
-			reika.reactorcraft.reactor.ReactorChunkLoading.setLoaded(sl, worldPosition, active);
+			ReactorChunkLoading.setLoaded(sl, worldPosition, active);
 		this.syncAllData();
 	}
 
@@ -300,7 +304,7 @@ public abstract class NuclearCoreBlockEntity extends ReactorBlockEntity implemen
 
 	/** Original getRestingTemperature: the temperature the core falls back to (the ambient temperature). */
 	protected int getRestingTemperature(Level world, BlockPos pos) {
-		return reika.rotarycraft.lib.world.AmbientTemperature.getAmbientTemperatureAt(world, pos);
+		return AmbientTemperature.getAmbientTemperatureAt(world, pos);
 	}
 
 	/** Original getAmbientHeatLossFactor. */
@@ -354,7 +358,7 @@ public abstract class NuclearCoreBlockEntity extends ReactorBlockEntity implemen
 	}
 
 	/** Original CPU coordinate set by the CPU remote control. */
-	@javax.annotation.Nullable
+	@Nullable
 	private BlockPos cpu;
 
 	@Override
@@ -370,7 +374,7 @@ public abstract class NuclearCoreBlockEntity extends ReactorBlockEntity implemen
 		if (cpu != null && world.getBlockEntity(cpu) instanceof CpuBlockEntity te)
 			te.removeTemperatureCheck(this);
 		for (int i = 0; i < inv.getSlots(); i++)
-			net.minecraft.world.Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), inv.getStackInSlot(i).copy());
+			Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), inv.getStackInSlot(i).copy());
 	}
 
 	@Override
@@ -399,7 +403,7 @@ public abstract class NuclearCoreBlockEntity extends ReactorBlockEntity implemen
 			inv.deserializeNBT(registries, NBT.getCompound("inv"));
 	}
 
-	protected static boolean chance(double c, net.minecraft.util.RandomSource r) {
+	protected static boolean chance(double c, RandomSource r) {
 		return RandomHelper.doWithChance(c, r);
 	}
 }

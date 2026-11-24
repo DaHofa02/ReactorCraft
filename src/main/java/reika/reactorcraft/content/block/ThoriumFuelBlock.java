@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -20,7 +21,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import reika.reactorcraft.radiation.RadiationEffects;
 import reika.reactorcraft.radiation.RadiationIntensity;
+import reika.rotarycraft.content.piping.PipingBlockEntity;
 import reika.rotarycraft.lib.math.RandomHelper;
+
+import java.util.Locale;
 
 /**
  * Original: Reika.ReactorCraft.Blocks.BlockThoriumFuel (a Forge 1.7.10 BlockFluidFinite of LiFBe fuel, 8 quanta per block) - spilled
@@ -71,11 +75,11 @@ public class ThoriumFuelBlock extends Block {
 		BlockState s = world.getBlockState(pos);
 		if (s.getBlock() instanceof ThoriumFuelBlock)
 			return false;
-		if (world.getBlockEntity(pos) instanceof reika.rotarycraft.content.piping.PipingBlockEntity)
+		if (world.getBlockEntity(pos) instanceof PipingBlockEntity)
 			return true;
 		if (s.isAir() || s.canBeReplaced() || !s.getFluidState().isEmpty() || s.is(Blocks.VINE))
 			return true;
-		String n = s.getBlock().getClass().getSimpleName().toLowerCase(java.util.Locale.ENGLISH);
+		String n = s.getBlock().getClass().getSimpleName().toLowerCase(Locale.ENGLISH);
 		return n.contains("duct") || n.contains("conduit") || n.contains("cable") || n.contains("pipe");
 	}
 
@@ -194,7 +198,7 @@ public class ThoriumFuelBlock extends Block {
 	}
 
 	@Override
-	protected boolean canBeReplaced(BlockState state, net.minecraft.world.item.context.BlockPlaceContext ctx) {
+	protected boolean canBeReplaced(BlockState state, BlockPlaceContext ctx) {
 		return true;
 	}
 }

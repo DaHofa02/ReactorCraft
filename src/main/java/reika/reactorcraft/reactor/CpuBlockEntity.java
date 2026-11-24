@@ -19,6 +19,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import reika.reactorcraft.content.entity.NeutronEntity;
@@ -126,13 +127,13 @@ public class CpuBlockEntity extends ReactorBlockEntity implements ShaftPowerRece
 	}
 
 	public void addTemperatureCheck(LinkableReactorCore te) {
-		temperatureChecks.add(((net.minecraft.world.level.block.entity.BlockEntity)te).getBlockPos().immutable());
+		temperatureChecks.add(((BlockEntity)te).getBlockPos().immutable());
 		te.link(this);
 		this.setChanged();
 	}
 
 	public void removeTemperatureCheck(LinkableReactorCore te) {
-		temperatureChecks.remove(((net.minecraft.world.level.block.entity.BlockEntity)te).getBlockPos());
+		temperatureChecks.remove(((BlockEntity)te).getBlockPos());
 		this.setChanged();
 	}
 

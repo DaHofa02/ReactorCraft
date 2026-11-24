@@ -8,9 +8,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -19,10 +24,14 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import reika.reactorcraft.ReactorCraft;
 import reika.reactorcraft.content.entity.NuclearWasteEntity;
 import reika.reactorcraft.content.item.FuelItem;
+import reika.reactorcraft.content.item.GeigerCounterItem;
+import reika.reactorcraft.content.item.NuclearWasteItem;
 import reika.reactorcraft.radiation.Isotopes;
+import reika.reactorcraft.radiation.RadiationEffects;
 import reika.reactorcraft.radiation.RadiationIntensity;
 import reika.reactorcraft.registry.ReactorComponents;
 import reika.reactorcraft.registry.ReactorEffects;
+import reika.reactorcraft.registry.ReactorEntities;
 import reika.reactorcraft.registry.ReactorItems;
 
 @GameTestHolder(ReactorCraft.MOD_ID)
@@ -38,13 +47,13 @@ public class RadiationTests {
 		Vec3 v = h.absoluteVec(new Vec3(2.5, 1.2, 4.5));
 		h.getLevel().addFreshEntity(new ItemEntity(h.getLevel(), v.x, v.y, v.z, NuclearWasteItemStack()));
 		h.succeedWhen(() -> {
-			h.assertEntityPresent(reika.reactorcraft.registry.ReactorEntities.NUCLEAR_WASTE.get());
+			h.assertEntityPresent(ReactorEntities.NUCLEAR_WASTE.get());
 			h.assertTrue(pig.hasEffect(ReactorEffects.RADIATION), "pig not irradiated");
 		});
 	}
 
 	private static ItemStack NuclearWasteItemStack() {
-		return reika.reactorcraft.content.item.NuclearWasteItem.of(Isotopes.Cs137);
+		return NuclearWasteItem.of(Isotopes.Cs137);
 	}
 
 	/** The waste entity ignores damage (original: cannot be destroyed). */
@@ -69,13 +78,13 @@ public class RadiationTests {
 		h.succeed();
 	}
 
-	private static net.minecraft.world.entity.player.Player suited(GameTestHelper h, net.minecraft.world.item.Item helmet, net.minecraft.world.item.Item chest,
-			net.minecraft.world.item.Item legs, net.minecraft.world.item.Item boots) {
-		var p = h.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
-		p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(helmet));
-		p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(chest));
-		p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, new ItemStack(legs));
-		p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, new ItemStack(boots));
+	private static Player suited(GameTestHelper h, Item helmet, Item chest,
+			Item legs, Item boots) {
+		var p = h.makeMockPlayer(GameType.SURVIVAL);
+		p.setItemSlot(EquipmentSlot.HEAD, new ItemStack(helmet));
+		p.setItemSlot(EquipmentSlot.CHEST, new ItemStack(chest));
+		p.setItemSlot(EquipmentSlot.LEGS, new ItemStack(legs));
+		p.setItemSlot(EquipmentSlot.FEET, new ItemStack(boots));
 		return p;
 	}
 
@@ -83,32 +92,32 @@ public class RadiationTests {
 	@GameTest(template = PLATFORM)
 	public static void hazmatShielding(GameTestHelper h) {
 		var haz = suited(h, ReactorItems.HAZ_HELMET.get(), ReactorItems.HAZ_CHEST.get(), ReactorItems.HAZ_LEGS.get(), ReactorItems.HAZ_BOOTS.get());
-		var iron = suited(h, net.minecraft.world.item.Items.IRON_HELMET, net.minecraft.world.item.Items.IRON_CHESTPLATE, net.minecraft.world.item.Items.IRON_LEGGINGS,
-				net.minecraft.world.item.Items.IRON_BOOTS);
-		var part = suited(h, ReactorItems.HAZ_HELMET.get(), ReactorItems.HAZ_CHEST.get(), ReactorItems.HAZ_LEGS.get(), net.minecraft.world.item.Items.AIR);
+		var iron = suited(h, Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS,
+				Items.IRON_BOOTS);
+		var part = suited(h, ReactorItems.HAZ_HELMET.get(), ReactorItems.HAZ_CHEST.get(), ReactorItems.HAZ_LEGS.get(), Items.AIR);
 		h.assertTrue(RadiationIntensity.HIGHLEVEL.hasSufficientShielding(haz) && RadiationIntensity.MODERATE.hasSufficientShielding(haz)
 				&& RadiationIntensity.LOWLEVEL.hasSufficientShielding(haz), "hazmat suit does not shield");
 		h.assertTrue(!RadiationIntensity.LETHAL.hasSufficientShielding(haz), "hazmat suit shields lethal radiation");
 		h.assertTrue(RadiationIntensity.LOWLEVEL.hasSufficientShielding(iron) && !RadiationIntensity.MODERATE.hasSufficientShielding(iron), "iron armour shielding");
 		h.assertTrue(!RadiationIntensity.LOWLEVEL.hasSufficientShielding(part), "an incomplete suit shields");
-		h.assertTrue(!reika.reactorcraft.radiation.RadiationEffects.applyEffects(haz, RadiationIntensity.HIGHLEVEL) && !haz.hasEffect(ReactorEffects.RADIATION),
+		h.assertTrue(!RadiationEffects.applyEffects(haz, RadiationIntensity.HIGHLEVEL) && !haz.hasEffect(ReactorEffects.RADIATION),
 				"suited player got sick");
-		h.assertTrue(haz.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).getMaxDamage() == 0, "hazmat suit wears out");
+		h.assertTrue(haz.getItemBySlot(EquipmentSlot.CHEST).getMaxDamage() == 0, "hazmat suit wears out");
 		h.succeed();
 	}
 
 	/** The Geiger counter uses 1 kJ with 1 in 8 per tick while held; uncharged it does nothing. */
 	@GameTest(template = PLATFORM)
 	public static void geigerUsesCharge(GameTestHelper h) {
-		var p = h.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
-		ItemStack g = reika.reactorcraft.content.item.GeigerCounterItem.charged(ReactorItems.GEIGER.get(), 1000);
+		var p = h.makeMockPlayer(GameType.SURVIVAL);
+		ItemStack g = GeigerCounterItem.charged(ReactorItems.GEIGER.get(), 1000);
 		for (int i = 0; i < 400; i++)
 			g.inventoryTick(h.getLevel(), p, 0, true);
-		int c = reika.reactorcraft.content.item.GeigerCounterItem.getCharge(g);
+		int c = GeigerCounterItem.getCharge(g);
 		h.assertTrue(c < 1000-20 && c > 1000-90, "charge "+c+" after 400 ticks");
 		ItemStack empty = new ItemStack(ReactorItems.GEIGER.get());
 		empty.inventoryTick(h.getLevel(), p, 0, true);
-		h.assertTrue(reika.reactorcraft.content.item.GeigerCounterItem.getCharge(empty) == 0, "uncharged counter changed");
+		h.assertTrue(GeigerCounterItem.getCharge(empty) == 0, "uncharged counter changed");
 		h.succeed();
 	}
 }

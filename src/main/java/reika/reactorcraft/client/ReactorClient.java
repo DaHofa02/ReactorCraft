@@ -3,16 +3,103 @@
  ******************************************************************************/
 package reika.reactorcraft.client;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
+import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.entity.ItemEntityRenderer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.phys.AABB;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientMobEffectExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 import reika.reactorcraft.ReactorCraft;
+import reika.reactorcraft.client.model.ModelBigTurbine;
+import reika.reactorcraft.client.model.ModelCentrifuge;
+import reika.reactorcraft.client.model.ModelCondenser;
+import reika.reactorcraft.client.model.ModelControl;
+import reika.reactorcraft.client.model.ModelDiffuser;
+import reika.reactorcraft.client.model.ModelElectrolyzer;
+import reika.reactorcraft.client.model.ModelExchanger;
+import reika.reactorcraft.client.model.ModelFlywheel;
+import reika.reactorcraft.client.model.ModelGenerator;
+import reika.reactorcraft.client.model.ModelHeavyPump;
+import reika.reactorcraft.client.model.ModelProcessor;
+import reika.reactorcraft.client.model.ModelReactorPump;
+import reika.reactorcraft.client.model.ModelSolarExchanger;
+import reika.reactorcraft.client.model.ModelSolarTop;
+import reika.reactorcraft.client.model.ModelSteamGrate;
+import reika.reactorcraft.client.model.ModelTurbine;
+import reika.reactorcraft.client.model.ModelWasteStorage;
+import reika.reactorcraft.client.screen.CpuScreen;
+import reika.reactorcraft.client.screen.ElectrolyzerScreen;
+import reika.reactorcraft.client.screen.IsoCentrifugeScreen;
+import reika.reactorcraft.client.screen.NuclearCoreScreen;
+import reika.reactorcraft.client.screen.SynthesizerScreen;
+import reika.reactorcraft.client.screen.ThoriumCoreScreen;
+import reika.reactorcraft.client.screen.UProcessorScreen;
+import reika.reactorcraft.client.screen.WasteScreen;
+import reika.reactorcraft.content.blockentity.ElectrolyzerBlockEntity;
+import reika.reactorcraft.content.blockentity.HeavyPumpBlockEntity;
+import reika.reactorcraft.content.blockentity.IsoCentrifugeBlockEntity;
+import reika.reactorcraft.content.blockentity.UProcessorBlockEntity;
+import reika.reactorcraft.content.menu.WasteMenus;
+import reika.reactorcraft.powergen.CondenserBlockEntity;
+import reika.reactorcraft.powergen.HeatExchangerBlockEntity;
+import reika.reactorcraft.powergen.HiPTurbineBlockEntity;
+import reika.reactorcraft.powergen.ReactorFlywheelBlockEntity;
+import reika.reactorcraft.powergen.ReactorGeneratorBlockEntity;
+import reika.reactorcraft.powergen.ReactorPumpBlockEntity;
+import reika.reactorcraft.powergen.SolarExchangerBlockEntity;
+import reika.reactorcraft.powergen.SolarTopBlockEntity;
+import reika.reactorcraft.powergen.SteamDiffuserBlockEntity;
+import reika.reactorcraft.powergen.SteamGrateBlockEntity;
+import reika.reactorcraft.powergen.TurbineCoreBlockEntity;
+import reika.reactorcraft.reactor.ControlRodBlockEntity;
+import reika.reactorcraft.registry.ReactorBlockEntities;
+import reika.reactorcraft.registry.ReactorBlocks;
+import reika.reactorcraft.registry.ReactorEffects;
+import reika.reactorcraft.registry.ReactorEntities;
 import reika.reactorcraft.registry.ReactorFluids;
+import reika.reactorcraft.registry.ReactorMenus;
+import reika.reactorcraft.waste.WasteStorageBlockEntity;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+
+import java.util.List;
+
+import org.joml.Matrix4f;
+
+import reika.rotarycraft.client.MachineItemRenderer;
+import reika.rotarycraft.client.model.TechneModel;
+import reika.rotarycraft.client.render.IORenderer;
+import reika.rotarycraft.client.render.PipeFluidRenderer;
+import reika.rotarycraft.content.blockentity.SolarTowerBlockEntity;
+import reika.rotarycraft.lib.math.BlackbodyColor;
 
 /** Original: ReactorCraft.textureHook - the fluid icons (fluid/*); low pressure water uses the water texture. */
 @EventBusSubscriber(modid = ReactorCraft.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -20,86 +107,86 @@ public final class ReactorClient {
 
 	private ReactorClient() {}
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation HEAVY_PUMP = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation HEAVY_PUMP = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "fluid_extractor"), "main");
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation ISO_CENTRIFUGE = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation ISO_CENTRIFUGE = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "isocentrifuge"), "main");
 
 	/** Original RenderCentrifuge: the model with the rotor turning by -phi. */
-	static final class IsoCentrifuge implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.content.blockentity.IsoCentrifugeBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelCentrifuge model;
+	static final class IsoCentrifuge implements BlockEntityRenderer<IsoCentrifugeBlockEntity> {
+		private final ModelCentrifuge model;
 
-		IsoCentrifuge(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelCentrifuge(ctx.bakeLayer(ISO_CENTRIFUGE));
+		IsoCentrifuge(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelCentrifuge(ctx.bakeLayer(ISO_CENTRIFUGE));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.content.blockentity.IsoCentrifugeBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(IsoCentrifugeBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
 			pose.translate(0.5F, 0.5F, 0.5F);
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("centrifuge.png"))), light, overlay, tile, null, -tile.phi, 0);
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("centrifuge.png"))), light, overlay, tile, null, -tile.phi, 0);
 			pose.popPose();
 		}
 	}
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation CONTROL_ROD = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation CONTROL_ROD = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "control_rod"), "main");
 
 	/** Original RenderControl: the model with the rods moved by the rod position (one step = 1/28 block); the render box reaches 2 blocks up. */
-	static final class ControlRod implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.reactor.ControlRodBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelControl model;
+	static final class ControlRod implements BlockEntityRenderer<ControlRodBlockEntity> {
+		private final ModelControl model;
 
-		ControlRod(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelControl(ctx.bakeLayer(CONTROL_ROD));
+		ControlRod(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelControl(ctx.bakeLayer(CONTROL_ROD));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.reactor.ControlRodBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(ControlRodBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
 			pose.translate(0.5F, 0.5F, 0.5F);
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("control.png"))), light, overlay, tile, null, tile.getRodPosition(), 0);
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("control.png"))), light, overlay, tile, null, tile.getRodPosition(), 0);
 			pose.popPose();
 		}
 
 		@Override
-		public net.minecraft.world.phys.AABB getRenderBoundingBox(reika.reactorcraft.reactor.ControlRodBlockEntity tile) {
-			return new net.minecraft.world.phys.AABB(tile.getBlockPos()).expandTowards(0, 2, 0);
+		public AABB getRenderBoundingBox(ControlRodBlockEntity tile) {
+			return new AABB(tile.getBlockPos()).expandTowards(0, 2, 0);
 		}
 	}
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation STEAM_GRATE = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation STEAM_GRATE = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "steam_grate"), "main");
-	public static final net.minecraft.client.model.geom.ModelLayerLocation[] TURBINE = new net.minecraft.client.model.geom.ModelLayerLocation[5];
+	public static final ModelLayerLocation[] TURBINE = new ModelLayerLocation[5];
 
 	static {
 		for (int i = 0; i < TURBINE.length; i++)
-			TURBINE[i] = new net.minecraft.client.model.geom.ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "turbine_core"), "stage"+i);
+			TURBINE[i] = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "turbine_core"), "stage"+i);
 	}
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation CONDENSER = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation CONDENSER = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "condenser"), "main");
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation STEAM_DIFFUSER = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation STEAM_DIFFUSER = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "steam_diffuser"), "main");
 
 	/** Original RenderSteamDiffuser: the model, turned by the metadata (0: 90, 1: 270, 2: 180, 3: 0 degrees). */
-	static final class SteamDiffuser implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.powergen.SteamDiffuserBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelDiffuser model;
+	static final class SteamDiffuser implements BlockEntityRenderer<SteamDiffuserBlockEntity> {
+		private final ModelDiffuser model;
 
-		SteamDiffuser(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelDiffuser(ctx.bakeLayer(STEAM_DIFFUSER));
+		SteamDiffuser(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelDiffuser(ctx.bakeLayer(STEAM_DIFFUSER));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.powergen.SteamDiffuserBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(SteamDiffuserBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
@@ -110,77 +197,77 @@ public final class ReactorClient {
 				case 2 -> 180;
 				default -> 0;
 			};
-			pose.mulPose(reika.rotarycraft.client.model.TechneModel.rotation(rot, 0, 1, 0));
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("diffuser.png"))), light, overlay, tile, null, -tile.phi, 0);
+			pose.mulPose(TechneModel.rotation(rot, 0, 1, 0));
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("diffuser.png"))), light, overlay, tile, null, -tile.phi, 0);
 			pose.popPose();
 		}
 	}
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation PRESSURIZER = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation PRESSURIZER = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "pressurizer"), "main");
 
 	/** Original RenderReactorPump: the model (not turned), its rotor at -phi (the pump turns it 15 degrees a tick while powered). */
-	static final class Pressurizer implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.powergen.ReactorPumpBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelReactorPump model;
+	static final class Pressurizer implements BlockEntityRenderer<ReactorPumpBlockEntity> {
+		private final ModelReactorPump model;
 
-		Pressurizer(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelReactorPump(ctx.bakeLayer(PRESSURIZER));
+		Pressurizer(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelReactorPump(ctx.bakeLayer(PRESSURIZER));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.powergen.ReactorPumpBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(ReactorPumpBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
 			pose.translate(0.5F, 0.5F, 0.5F);
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("pump.png"))), light, overlay, tile, null, -tile.phi, 0);
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("pump.png"))), light, overlay, tile, null, -tile.phi, 0);
 			pose.popPose();
 		}
 	}
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation WASTE_STORAGE = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation WASTE_STORAGE = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "waste_storage"), "main");
 
 	/** Original RenderWasteStorage: the model, unrotated. */
-	static final class WasteStorage implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.waste.WasteStorageBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelWasteStorage model;
+	static final class WasteStorage implements BlockEntityRenderer<WasteStorageBlockEntity> {
+		private final ModelWasteStorage model;
 
-		WasteStorage(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelWasteStorage(ctx.bakeLayer(WASTE_STORAGE));
+		WasteStorage(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelWasteStorage(ctx.bakeLayer(WASTE_STORAGE));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.waste.WasteStorageBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(WasteStorageBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
 			pose.translate(0.5F, 0.5F, 0.5F);
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("storage.png"))), light, overlay, tile, null, 0, 0);
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("storage.png"))), light, overlay, tile, null, 0, 0);
 			pose.popPose();
 		}
 	}
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation HEAT_EXCHANGER = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation HEAT_EXCHANGER = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "heat_exchanger"), "main");
 
 	/** Original RenderExchanger: the model and, while it has a coolant, the hot fluid in the inner column and the cold one in the outer ring. */
-	static final class HeatExchanger implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.powergen.HeatExchangerBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelExchanger model;
+	static final class HeatExchanger implements BlockEntityRenderer<HeatExchangerBlockEntity> {
+		private final ModelExchanger model;
 
-		HeatExchanger(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelExchanger(ctx.bakeLayer(HEAT_EXCHANGER));
+		HeatExchanger(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelExchanger(ctx.bakeLayer(HEAT_EXCHANGER));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.powergen.HeatExchangerBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(HeatExchangerBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
 			pose.translate(0.5F, 0.5F, 0.5F);
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("exchanger2.png"))), light, overlay, tile, null, 0, 0);
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("exchanger2.png"))), light, overlay, tile, null, 0, 0);
 			pose.popPose();
 			var e = tile.getLevel() != null ? tile.getCurrentRecipe() : null;
 			if (e != null) {
@@ -191,13 +278,13 @@ public final class ReactorClient {
 	}
 
 	/** A box of the fluid's still texture and tint (original ReikaLiquidRenderer display list, scaled). */
-	static void fluidBox(com.mojang.blaze3d.vertex.PoseStack pose, net.minecraft.client.renderer.MultiBufferSource buf, net.minecraft.world.level.material.Fluid f,
+	static void fluidBox(PoseStack pose, MultiBufferSource buf, Fluid f,
 			float x0, float y0, float z0, float x1, float y1, float z1, int light) {
 		var ext = IClientFluidTypeExtensions.of(f);
-		var sprite = net.minecraft.client.Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS).apply(ext.getStillTexture());
+		var sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ext.getStillTexture());
 		int clr = ext.getTintColor();
-		var vc = buf.getBuffer(net.minecraft.client.renderer.RenderType.translucent());
-		org.joml.Matrix4f m = pose.last().pose();
+		var vc = buf.getBuffer(RenderType.translucent());
+		Matrix4f m = pose.last().pose();
 		float u0 = sprite.getU0(), u1 = sprite.getU1(), v0 = sprite.getV0(), v1 = sprite.getV1();
 		float[][] q = {
 				{x0, y1, z0, x0, y1, z1, x1, y1, z1, x1, y1, z0}, {x0, y0, z0, x1, y0, z0, x1, y0, z1, x0, y0, z1},
@@ -210,71 +297,71 @@ public final class ReactorClient {
 	}
 
 	/** Original RenderCondenser: the model, unrotated. */
-	static final class Condenser implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.powergen.CondenserBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelCondenser model;
+	static final class Condenser implements BlockEntityRenderer<CondenserBlockEntity> {
+		private final ModelCondenser model;
 
-		Condenser(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelCondenser(ctx.bakeLayer(CONDENSER));
+		Condenser(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelCondenser(ctx.bakeLayer(CONDENSER));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.powergen.CondenserBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(CondenserBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
 			pose.translate(0.5F, 0.5F, 0.5F);
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("condenser.png"))), light, overlay, tile, null, 0, 0);
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("condenser.png"))), light, overlay, tile, null, 0, 0);
 			pose.popPose();
 		}
 	}
 
 	/** Original RenderSteamGrate: the model, unrotated. */
-	static final class SteamGrate implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.powergen.SteamGrateBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelSteamGrate model;
+	static final class SteamGrate implements BlockEntityRenderer<SteamGrateBlockEntity> {
+		private final ModelSteamGrate model;
 
-		SteamGrate(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelSteamGrate(ctx.bakeLayer(STEAM_GRATE));
+		SteamGrate(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelSteamGrate(ctx.bakeLayer(STEAM_GRATE));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.powergen.SteamGrateBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(SteamGrateBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
 			pose.translate(0.5F, 0.5F, 0.5F);
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("steamgrate.png"))), light, overlay, tile, null, 0, 0);
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("steamgrate.png"))), light, overlay, tile, null, 0, 0);
 			pose.popPose();
 		}
 	}
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation[] BIG_TURBINE = new net.minecraft.client.model.geom.ModelLayerLocation[7];
+	public static final ModelLayerLocation[] BIG_TURBINE = new ModelLayerLocation[7];
 
 	static {
 		for (int i = 0; i < BIG_TURBINE.length; i++)
-			BIG_TURBINE[i] = new net.minecraft.client.model.geom.ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "hip_turbine"), "stage"+i);
+			BIG_TURBINE[i] = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "hip_turbine"), "stage"+i);
 	}
 
 	/**
 	 * Original RenderTurbine / RenderBigTurbine: the stage's model turned by the metadata (0: 90, 1: 270, 2: 180, 3: 0) and spun by -phi;
 	 * damage thins the blades. A high pressure turbine without its multiblock is drawn as a dark block (multiblock icon 3).
 	 */
-	static final class TurbineCore<T extends reika.reactorcraft.powergen.TurbineCoreBlockEntity> implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<T> {
-		private final reika.reactorcraft.client.model.ModelTurbine[] models;
+	static final class TurbineCore<T extends TurbineCoreBlockEntity> implements BlockEntityRenderer<T> {
+		private final ModelTurbine[] models;
 		private final String texture;
 
-		TurbineCore(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx, boolean big) {
-			net.minecraft.client.model.geom.ModelLayerLocation[] layers = big ? BIG_TURBINE : TURBINE;
-			models = new reika.reactorcraft.client.model.ModelTurbine[layers.length];
+		TurbineCore(BlockEntityRendererProvider.Context ctx, boolean big) {
+			ModelLayerLocation[] layers = big ? BIG_TURBINE : TURBINE;
+			models = new ModelTurbine[layers.length];
 			for (int i = 0; i < models.length; i++)
-				models[i] = big ? new reika.reactorcraft.client.model.ModelBigTurbine(ctx.bakeLayer(layers[i]), i) : new reika.reactorcraft.client.model.ModelTurbine(ctx.bakeLayer(layers[i]), i);
+				models[i] = big ? new ModelBigTurbine(ctx.bakeLayer(layers[i]), i) : new ModelTurbine(ctx.bakeLayer(layers[i]), i);
 			texture = big ? "bigturbine.png" : "turbine.png";
 		}
 
 		@Override
-		public void render(T tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(T tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
@@ -285,10 +372,10 @@ public final class ReactorClient {
 				case 2 -> 180;
 				default -> 0;
 			};
-			pose.mulPose(reika.rotarycraft.client.model.TechneModel.rotation(rot, 0, 1, 0));
-			var vc = buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex(texture)));
+			pose.mulPose(TechneModel.rotation(rot, 0, 1, 0));
+			var vc = buf.getBuffer(RenderType.entityCutout(tex(texture)));
 			if (tile.getLevel() == null) { //item
-				boolean big = tile instanceof reika.reactorcraft.powergen.HiPTurbineBlockEntity;
+				boolean big = tile instanceof HiPTurbineBlockEntity;
 				float sc = big ? 0.4F : 0.6F;
 				pose.scale(sc, sc, sc);
 				pose.translate(big ? -0.3 : -0.1, big ? 1.7 : 0.8, 0);
@@ -303,13 +390,13 @@ public final class ReactorClient {
 			}
 			int dmg = tile.getDamage();
 			int stage = Math.min(tile.getStage(), models.length-1);
-			models[stage].renderAll(pose, vc, light, overlay, tile, dmg > 0 ? java.util.List.of(dmg) : null, -tile.phi, 0);
+			models[stage].renderAll(pose, vc, light, overlay, tile, dmg > 0 ? List.of(dmg) : null, -tile.phi, 0);
 			pose.popPose();
 		}
 
 		@Override
-		public net.minecraft.world.phys.AABB getRenderBoundingBox(T tile) {
-			return new net.minecraft.world.phys.AABB(tile.getBlockPos()).inflate(6);
+		public AABB getRenderBoundingBox(T tile) {
+			return new AABB(tile.getBlockPos()).inflate(6);
 		}
 
 		@Override
@@ -319,10 +406,10 @@ public final class ReactorClient {
 	}
 
 	/** The unformed turbine/generator cores: a plain cube with one block texture on every side. */
-	static void renderCube(com.mojang.blaze3d.vertex.PoseStack pose, net.minecraft.client.renderer.MultiBufferSource buf, int light, String texture) {
-			var sprite = net.minecraft.client.Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)
+	static void renderCube(PoseStack pose, MultiBufferSource buf, int light, String texture) {
+			var sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
 					.apply(ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, texture));
-			var vc = buf.getBuffer(net.minecraft.client.renderer.RenderType.solid());
+			var vc = buf.getBuffer(RenderType.solid());
 			var m = pose.last();
 			float u0 = sprite.getU0(), u1 = sprite.getU1(), v0 = sprite.getV0(), v1 = sprite.getV1();
 			float[][] q = {{0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0}, {0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1}, {0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0},
@@ -338,16 +425,16 @@ public final class ReactorClient {
 	 * Original RenderGenerator: formed, the generator model (rotor turning by phi) with the texture of its mode; unformed, a cube with
 	 * the mode's block texture (generator_10..12); as an item, the model at 1/8 size.
 	 */
-	static final class Generator implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.powergen.ReactorGeneratorBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelGenerator model;
+	static final class Generator implements BlockEntityRenderer<ReactorGeneratorBlockEntity> {
+		private final ModelGenerator model;
 
-		Generator(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelGenerator(ctx.bakeLayer(GENERATOR));
+		Generator(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelGenerator(ctx.bakeLayer(GENERATOR));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.powergen.ReactorGeneratorBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(ReactorGeneratorBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			int mode = tile.getMode().ordinal();
 			if (tile.getLevel() != null && !tile.hasMultiBlock()) {
 				renderCube(pose, buf, light, "block/multi/generator_"+(10+mode));
@@ -363,10 +450,10 @@ public final class ReactorClient {
 				case 3 -> 180;
 				default -> 0;
 			};
-			pose.mulPose(reika.rotarycraft.client.model.TechneModel.rotation(rot, 0, 1, 0));
-			var vc = buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("generator"+mode+".png")));
+			pose.mulPose(TechneModel.rotation(rot, 0, 1, 0));
+			var vc = buf.getBuffer(RenderType.entityCutout(tex("generator"+mode+".png")));
 			if (tile.getLevel() == null) { //item
-				pose.mulPose(reika.rotarycraft.client.model.TechneModel.rotation(180, 0, 1, 0));
+				pose.mulPose(TechneModel.rotation(180, 0, 1, 0));
 				pose.translate(0, 0.875, 0.5);
 				pose.scale(0.125F, 0.125F, 0.125F);
 				model.renderAll(pose, vc, light, overlay, tile, null, -tile.phi, 0);
@@ -377,17 +464,17 @@ public final class ReactorClient {
 		}
 
 		@Override
-		public net.minecraft.world.phys.AABB getRenderBoundingBox(reika.reactorcraft.powergen.ReactorGeneratorBlockEntity tile) {
-			net.minecraft.core.BlockPos p = tile.getBlockPos();
-			net.minecraft.core.Direction f = tile.getFacing();
-			int l = reika.reactorcraft.powergen.ReactorGeneratorBlockEntity.GENERATOR_LENGTH;
+		public AABB getRenderBoundingBox(ReactorGeneratorBlockEntity tile) {
+			BlockPos p = tile.getBlockPos();
+			Direction f = tile.getFacing();
+			int l = ReactorGeneratorBlockEntity.GENERATOR_LENGTH;
 			int x1 = p.getX()+1+f.getStepX()*l, z1 = p.getZ()+1+f.getStepZ()*l;
-			return new net.minecraft.world.phys.AABB(Math.min(x1, p.getX()), p.getY()-2, Math.min(z1, p.getZ()), Math.max(x1, p.getX()), p.getY()+3,
+			return new AABB(Math.min(x1, p.getX()), p.getY()-2, Math.min(z1, p.getZ()), Math.max(x1, p.getX()), p.getY()+3,
 					Math.max(z1, p.getZ())).inflate(6);
 		}
 
 		@Override
-		public boolean shouldRenderOffScreen(reika.reactorcraft.powergen.ReactorGeneratorBlockEntity tile) {
+		public boolean shouldRenderOffScreen(ReactorGeneratorBlockEntity tile) {
 			return true;
 		}
 	}
@@ -396,16 +483,16 @@ public final class ReactorClient {
 	 * Original RenderTurbineWheel: formed, the flywheel model turning with phi (6x the turbine's); unformed, a cube with the flywheel
 	 * dampener texture; as an item, the model at 1/4 size.
 	 */
-	static final class Flywheel implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.powergen.ReactorFlywheelBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelFlywheel model;
+	static final class Flywheel implements BlockEntityRenderer<ReactorFlywheelBlockEntity> {
+		private final ModelFlywheel model;
 
-		Flywheel(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelFlywheel(ctx.bakeLayer(FLYWHEEL));
+		Flywheel(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelFlywheel(ctx.bakeLayer(FLYWHEEL));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.powergen.ReactorFlywheelBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(ReactorFlywheelBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			if (tile.getLevel() != null && !tile.hasMultiBlock()) {
 				renderCube(pose, buf, light, "block/multi/flywheel_1");
 				return;
@@ -420,10 +507,10 @@ public final class ReactorClient {
 				case 3 -> 180;
 				default -> 0;
 			};
-			pose.mulPose(reika.rotarycraft.client.model.TechneModel.rotation(rot, 0, 1, 0));
-			var vc = buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("flywheel.png")));
+			pose.mulPose(TechneModel.rotation(rot, 0, 1, 0));
+			var vc = buf.getBuffer(RenderType.entityCutout(tex("flywheel.png")));
 			if (tile.getLevel() == null) { //item
-				pose.mulPose(reika.rotarycraft.client.model.TechneModel.rotation(180, 0, 1, 0));
+				pose.mulPose(TechneModel.rotation(180, 0, 1, 0));
 				pose.translate(0, 0.75, 0);
 				pose.scale(0.25F, 0.25F, 0.25F);
 				model.renderAll(pose, vc, light, overlay, tile, null, -tile.phi, 0);
@@ -434,27 +521,27 @@ public final class ReactorClient {
 		}
 
 		@Override
-		public net.minecraft.world.phys.AABB getRenderBoundingBox(reika.reactorcraft.powergen.ReactorFlywheelBlockEntity tile) {
-			return new net.minecraft.world.phys.AABB(tile.getBlockPos()).inflate(3);
+		public AABB getRenderBoundingBox(ReactorFlywheelBlockEntity tile) {
+			return new AABB(tile.getBlockPos()).inflate(3);
 		}
 	}
 
 	/** Original RenderSolarExchanger: the model, unrotated. */
-	static final class SolarExchanger implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.powergen.SolarExchangerBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelSolarExchanger model;
+	static final class SolarExchanger implements BlockEntityRenderer<SolarExchangerBlockEntity> {
+		private final ModelSolarExchanger model;
 
-		SolarExchanger(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelSolarExchanger(ctx.bakeLayer(SOLAR_EXCHANGER));
+		SolarExchanger(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelSolarExchanger(ctx.bakeLayer(SOLAR_EXCHANGER));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.powergen.SolarExchangerBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(SolarExchangerBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
 			pose.translate(0.5F, 0.5F, 0.5F);
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("solar.png"))), light, overlay, tile, null, 0, 0);
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("solar.png"))), light, overlay, tile, null, 0, 0);
 			pose.popPose();
 		}
 	}
@@ -464,46 +551,46 @@ public final class ReactorClient {
 	 * in the blackbody colour of 200+2*T at full brightness (black as an item); above 400 C the active part also shows the solar flare,
 	 * facing the viewer, (T-400)/1500*6 blocks wide and as bright as the mirrors.
 	 */
-	static final class SolarTop implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.powergen.SolarTopBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelSolarTop model;
+	static final class SolarTop implements BlockEntityRenderer<SolarTopBlockEntity> {
+		private final ModelSolarTop model;
 
-		SolarTop(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelSolarTop(ctx.bakeLayer(SOLAR_TOP));
+		SolarTop(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelSolarTop(ctx.bakeLayer(SOLAR_TOP));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.powergen.SolarTopBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(SolarTopBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			boolean inWorld = tile.getLevel() != null;
-			boolean flip = inWorld && tile.getLevel().getBlockEntity(tile.getBlockPos().below()) instanceof reika.reactorcraft.powergen.SolarTopBlockEntity;
+			boolean flip = inWorld && tile.getLevel().getBlockEntity(tile.getBlockPos().below()) instanceof SolarTopBlockEntity;
 			pose.pushPose();
 			pose.translate(0, flip ? 0 : 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
 			pose.translate(0.5F, 0.5F, 0.5F);
 			if (flip) {
-				pose.mulPose(reika.rotarycraft.client.model.TechneModel.rotation(180, 1, 0, 0));
-				pose.mulPose(reika.rotarycraft.client.model.TechneModel.rotation(90, 0, 1, 0));
+				pose.mulPose(TechneModel.rotation(180, 1, 0, 0));
+				pose.mulPose(TechneModel.rotation(90, 0, 1, 0));
 			}
-			int c = inWorld ? reika.rotarycraft.lib.math.BlackbodyColor.getColorForTemperature(200+tile.getTemperature()*2) : 0x000000;
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("solartop.png"))), light, overlay, tile, java.util.List.of(c, 0, 0), 0, 0);
+			int c = inWorld ? BlackbodyColor.getColorForTemperature(200+tile.getTemperature()*2) : 0x000000;
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("solartop.png"))), light, overlay, tile, List.of(c, 0, 0), 0, 0);
 			pose.popPose();
 			if (inWorld && tile.isActive() && tile.getTemperature() > 400)
 				this.renderFlare(tile, pose, buf);
 		}
 
-		private void renderFlare(reika.reactorcraft.powergen.SolarTopBlockEntity te, com.mojang.blaze3d.vertex.PoseStack pose, net.minecraft.client.renderer.MultiBufferSource buf) {
-			var sprite = net.minecraft.client.Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)
+		private void renderFlare(SolarTopBlockEntity te, PoseStack pose, MultiBufferSource buf) {
+			var sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS)
 					.apply(ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "block/solarflare"));
 			double f = (te.getTemperature()-400)/1500D;
 			float s = (float)(6*f);
-			float b = te.getLevel().getBlockEntity(te.getBlockPos().below()) instanceof reika.rotarycraft.content.blockentity.SolarTowerBlockEntity t ? t.getArrayOverallBrightness() : 0;
+			float b = te.getLevel().getBlockEntity(te.getBlockPos().below()) instanceof SolarTowerBlockEntity t ? t.getArrayOverallBrightness() : 0;
 			int g = (int)(b*255);
 			int color = 0xFF000000 | g << 16 | g << 8 | g;
 			pose.pushPose();
 			pose.translate(0.5, 1.0, 0.5); //original: 0.5 above the centre in the flipped model space = the top face
-			pose.mulPose(net.minecraft.client.Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
+			pose.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
 			pose.scale(s, s, s);
-			var vc = buf.getBuffer(net.minecraft.client.renderer.RenderType.eyes(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)); //original additive blend
+			var vc = buf.getBuffer(RenderType.eyes(InventoryMenu.BLOCK_ATLAS)); //original additive blend
 			var m = pose.last();
 			vc.addVertex(m, -1, -1, 0).setColor(color).setUv(sprite.getU0(), sprite.getV1()).setOverlay(0).setLight(0xF000F0).setNormal(m, 0, 0, 1);
 			vc.addVertex(m, 1, -1, 0).setColor(color).setUv(sprite.getU1(), sprite.getV1()).setOverlay(0).setLight(0xF000F0).setNormal(m, 0, 0, 1);
@@ -513,46 +600,46 @@ public final class ReactorClient {
 		}
 
 		@Override
-		public net.minecraft.world.phys.AABB getRenderBoundingBox(reika.reactorcraft.powergen.SolarTopBlockEntity tile) {
-			return new net.minecraft.world.phys.AABB(tile.getBlockPos()).inflate(4);
+		public AABB getRenderBoundingBox(SolarTopBlockEntity tile) {
+			return new AABB(tile.getBlockPos()).inflate(4);
 		}
 	}
 
 	/** Original RenderElectrolyzer: the model, unrotated. */
-	static final class Electrolyzer implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.content.blockentity.ElectrolyzerBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelElectrolyzer model;
+	static final class Electrolyzer implements BlockEntityRenderer<ElectrolyzerBlockEntity> {
+		private final ModelElectrolyzer model;
 
-		Electrolyzer(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelElectrolyzer(ctx.bakeLayer(ELECTROLYZER));
+		Electrolyzer(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelElectrolyzer(ctx.bakeLayer(ELECTROLYZER));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.content.blockentity.ElectrolyzerBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(ElectrolyzerBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
 			pose.translate(0.5F, 0.5F, 0.5F);
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("electrolyzer.png"))), light, overlay, tile, null, 0, 0);
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("electrolyzer.png"))), light, overlay, tile, null, 0, 0);
 			pose.popPose();
 		}
 	}
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation ELECTROLYZER = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation ELECTROLYZER = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "electrolyzer"), "main");
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation SOLAR_EXCHANGER = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation SOLAR_EXCHANGER = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "solar_exchanger"), "main");
-	public static final net.minecraft.client.model.geom.ModelLayerLocation SOLAR_TOP = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation SOLAR_TOP = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "solar_top"), "main");
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation FLYWHEEL = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation FLYWHEEL = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "turbine_flywheel"), "main");
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation GENERATOR = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation GENERATOR = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "reactor_generator"), "main");
 
-	public static final net.minecraft.client.model.geom.ModelLayerLocation PROCESSOR = new net.minecraft.client.model.geom.ModelLayerLocation(
+	public static final ModelLayerLocation PROCESSOR = new ModelLayerLocation(
 			ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "processor"), "main");
 
 	/**
@@ -560,47 +647,47 @@ public final class ReactorClient {
 	 * (0xFFA54D: its temperature field stays 0 in the original, so the red hot colour never shows).
 	 */
 	@SubscribeEvent
-	public static void blockColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Block e) {
-		e.register((state, world, pos, tint) -> 0xFF7F7F7F, reika.reactorcraft.registry.ReactorBlocks.STEAM_LINE.get());
-		e.register((state, world, pos, tint) -> 0xFFFFA54D, reika.reactorcraft.registry.ReactorBlocks.HEAT_PIPE.get());
+	public static void blockColors(RegisterColorHandlersEvent.Block e) {
+		e.register((state, world, pos, tint) -> 0xFF7F7F7F, ReactorBlocks.STEAM_LINE.get());
+		e.register((state, world, pos, tint) -> 0xFFFFA54D, ReactorBlocks.HEAT_PIPE.get());
 	}
 
 	/** Original RenderWaterLine: the heat pipe item is drawn in colour (1, 0.65, 0.3). */
 	@SubscribeEvent
-	public static void itemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item e) {
-		e.register((stack, tint) -> tint == 0 ? 0xFFFFA54C : -1, reika.reactorcraft.registry.ReactorBlocks.HEAT_PIPE.get());
+	public static void itemColors(RegisterColorHandlersEvent.Item e) {
+		e.register((stack, tint) -> tint == 0 ? 0xFFFFA54C : -1, ReactorBlocks.HEAT_PIPE.get());
 	}
 
 	@SubscribeEvent
-	public static void screens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent e) {
-		e.register(reika.reactorcraft.registry.ReactorMenus.PROCESSOR.get(), reika.reactorcraft.client.screen.UProcessorScreen::new);
-		e.register(reika.reactorcraft.registry.ReactorMenus.SYNTHESIZER.get(), reika.reactorcraft.client.screen.SynthesizerScreen::new);
-		e.register(reika.reactorcraft.registry.ReactorMenus.ELECTROLYZER.get(), reika.reactorcraft.client.screen.ElectrolyzerScreen::new);
-		e.register(reika.reactorcraft.registry.ReactorMenus.ISO_CENTRIFUGE.get(), reika.reactorcraft.client.screen.IsoCentrifugeScreen::new);
-		e.register(reika.reactorcraft.registry.ReactorMenus.NUCLEAR_CORE.get(), reika.reactorcraft.client.screen.NuclearCoreScreen::new);
-		e.register(reika.reactorcraft.registry.ReactorMenus.CPU.get(), reika.reactorcraft.client.screen.CpuScreen::new);
-		e.register(reika.reactorcraft.registry.ReactorMenus.THORIUM_CORE.get(), reika.reactorcraft.client.screen.ThoriumCoreScreen::new);
-		e.register(reika.reactorcraft.registry.ReactorMenus.WASTE_CONTAINER.get(),
-				(reika.reactorcraft.content.menu.WasteMenus.Container m, net.minecraft.world.entity.player.Inventory i, net.minecraft.network.chat.Component t) -> new reika.reactorcraft.client.screen.WasteScreen<>(m, i, t, "wastecontainer2", 175));
-		e.register(reika.reactorcraft.registry.ReactorMenus.WASTE_STORAGE.get(),
-				(reika.reactorcraft.content.menu.WasteMenus.Storage m, net.minecraft.world.entity.player.Inventory i, net.minecraft.network.chat.Component t) -> new reika.reactorcraft.client.screen.WasteScreen<>(m, i, t, "wastestorage", 186));
-		e.register(reika.reactorcraft.registry.ReactorMenus.PEBBLE_BED.get(),
-				(reika.reactorcraft.content.menu.WasteMenus.PebbleBed m, net.minecraft.world.entity.player.Inventory i, net.minecraft.network.chat.Component t) -> new reika.reactorcraft.client.screen.WasteScreen<>(m, i, t, "pebblegui", 240, 237));
-		e.register(reika.reactorcraft.registry.ReactorMenus.WASTE_DECAYER.get(),
-				(reika.reactorcraft.content.menu.WasteMenus.Decayer m, net.minecraft.world.entity.player.Inventory i, net.minecraft.network.chat.Component t) -> new reika.reactorcraft.client.screen.WasteScreen<>(m, i, t, "wastedecayer", 175));
+	public static void screens(RegisterMenuScreensEvent e) {
+		e.register(ReactorMenus.PROCESSOR.get(), UProcessorScreen::new);
+		e.register(ReactorMenus.SYNTHESIZER.get(), SynthesizerScreen::new);
+		e.register(ReactorMenus.ELECTROLYZER.get(), ElectrolyzerScreen::new);
+		e.register(ReactorMenus.ISO_CENTRIFUGE.get(), IsoCentrifugeScreen::new);
+		e.register(ReactorMenus.NUCLEAR_CORE.get(), NuclearCoreScreen::new);
+		e.register(ReactorMenus.CPU.get(), CpuScreen::new);
+		e.register(ReactorMenus.THORIUM_CORE.get(), ThoriumCoreScreen::new);
+		e.register(ReactorMenus.WASTE_CONTAINER.get(),
+				(WasteMenus.Container m, Inventory i, Component t) -> new WasteScreen<>(m, i, t, "wastecontainer2", 175));
+		e.register(ReactorMenus.WASTE_STORAGE.get(),
+				(WasteMenus.Storage m, Inventory i, Component t) -> new WasteScreen<>(m, i, t, "wastestorage", 186));
+		e.register(ReactorMenus.PEBBLE_BED.get(),
+				(WasteMenus.PebbleBed m, Inventory i, Component t) -> new WasteScreen<>(m, i, t, "pebblegui", 240, 237));
+		e.register(ReactorMenus.WASTE_DECAYER.get(),
+				(WasteMenus.Decayer m, Inventory i, Component t) -> new WasteScreen<>(m, i, t, "wastedecayer", 175));
 	}
 
 	/** Original RenderProcessor: lifted by 0.01, turned by the metadata (0: 270, 1: 90, 2: 0, 3: 180). */
-	static final class Processor implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.content.blockentity.UProcessorBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelProcessor model;
+	static final class Processor implements BlockEntityRenderer<UProcessorBlockEntity> {
+		private final ModelProcessor model;
 
-		Processor(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelProcessor(ctx.bakeLayer(PROCESSOR));
+		Processor(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelProcessor(ctx.bakeLayer(PROCESSOR));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.content.blockentity.UProcessorBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(UProcessorBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
@@ -615,8 +702,8 @@ public final class ReactorClient {
 					default -> 0;
 				};
 			}
-			pose.mulPose(reika.rotarycraft.client.model.TechneModel.rotation(a, 0, 1, 0));
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("processor.png"))), light, overlay, tile, null, -tile.phi, 0);
+			pose.mulPose(TechneModel.rotation(a, 0, 1, 0));
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("processor.png"))), light, overlay, tile, null, -tile.phi, 0);
 			pose.popPose();
 		}
 	}
@@ -626,83 +713,83 @@ public final class ReactorClient {
 	}
 
 	@SubscribeEvent
-	public static void guiLayers(net.neoforged.neoforge.client.event.RegisterGuiLayersEvent e) {
+	public static void guiLayers(RegisterGuiLayersEvent e) {
 		//original IronFinderOverlay drew in the HELMET (camera overlay) pass
-		e.registerAbove(net.neoforged.neoforge.client.gui.VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "iron_finder"),
+		e.registerAbove(VanillaGuiLayers.CAMERA_OVERLAYS, ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "iron_finder"),
 				IronFinderOverlay::render);
 	}
 
 	@SubscribeEvent
-	public static void layers(net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterLayerDefinitions e) {
+	public static void layers(EntityRenderersEvent.RegisterLayerDefinitions e) {
 		FusionRenderers.registerLayers(e);
-		e.registerLayerDefinition(HEAVY_PUMP, reika.reactorcraft.client.model.ModelHeavyPump::createLayer);
-		e.registerLayerDefinition(PROCESSOR, reika.reactorcraft.client.model.ModelProcessor::createLayer);
-		e.registerLayerDefinition(ISO_CENTRIFUGE, reika.reactorcraft.client.model.ModelCentrifuge::createLayer);
-		e.registerLayerDefinition(CONTROL_ROD, reika.reactorcraft.client.model.ModelControl::createLayer);
-		e.registerLayerDefinition(STEAM_GRATE, reika.reactorcraft.client.model.ModelSteamGrate::createLayer);
-		e.registerLayerDefinition(CONDENSER, reika.reactorcraft.client.model.ModelCondenser::createLayer);
-		e.registerLayerDefinition(STEAM_DIFFUSER, reika.reactorcraft.client.model.ModelDiffuser::createLayer);
-		e.registerLayerDefinition(PRESSURIZER, reika.reactorcraft.client.model.ModelReactorPump::createLayer);
-		e.registerLayerDefinition(GENERATOR, reika.reactorcraft.client.model.ModelGenerator::createLayer);
-		e.registerLayerDefinition(FLYWHEEL, reika.reactorcraft.client.model.ModelFlywheel::createLayer);
-		e.registerLayerDefinition(ELECTROLYZER, reika.reactorcraft.client.model.ModelElectrolyzer::createLayer);
-		e.registerLayerDefinition(SOLAR_EXCHANGER, reika.reactorcraft.client.model.ModelSolarExchanger::createLayer);
-		e.registerLayerDefinition(SOLAR_TOP, reika.reactorcraft.client.model.ModelSolarTop::createLayer);
-		e.registerLayerDefinition(HEAT_EXCHANGER, reika.reactorcraft.client.model.ModelExchanger::createLayer);
-		e.registerLayerDefinition(WASTE_STORAGE, reika.reactorcraft.client.model.ModelWasteStorage::createLayer);
+		e.registerLayerDefinition(HEAVY_PUMP, ModelHeavyPump::createLayer);
+		e.registerLayerDefinition(PROCESSOR, ModelProcessor::createLayer);
+		e.registerLayerDefinition(ISO_CENTRIFUGE, ModelCentrifuge::createLayer);
+		e.registerLayerDefinition(CONTROL_ROD, ModelControl::createLayer);
+		e.registerLayerDefinition(STEAM_GRATE, ModelSteamGrate::createLayer);
+		e.registerLayerDefinition(CONDENSER, ModelCondenser::createLayer);
+		e.registerLayerDefinition(STEAM_DIFFUSER, ModelDiffuser::createLayer);
+		e.registerLayerDefinition(PRESSURIZER, ModelReactorPump::createLayer);
+		e.registerLayerDefinition(GENERATOR, ModelGenerator::createLayer);
+		e.registerLayerDefinition(FLYWHEEL, ModelFlywheel::createLayer);
+		e.registerLayerDefinition(ELECTROLYZER, ModelElectrolyzer::createLayer);
+		e.registerLayerDefinition(SOLAR_EXCHANGER, ModelSolarExchanger::createLayer);
+		e.registerLayerDefinition(SOLAR_TOP, ModelSolarTop::createLayer);
+		e.registerLayerDefinition(HEAT_EXCHANGER, ModelExchanger::createLayer);
+		e.registerLayerDefinition(WASTE_STORAGE, ModelWasteStorage::createLayer);
 		for (int i = 0; i < TURBINE.length; i++) {
 			int stage = i;
-			e.registerLayerDefinition(TURBINE[i], () -> reika.reactorcraft.client.model.ModelTurbine.createLayer(stage));
+			e.registerLayerDefinition(TURBINE[i], () -> ModelTurbine.createLayer(stage));
 		}
 		for (int i = 0; i < BIG_TURBINE.length; i++) {
 			int stage = i;
-			e.registerLayerDefinition(BIG_TURBINE[i], () -> reika.reactorcraft.client.model.ModelBigTurbine.createLayer(stage));
+			e.registerLayerDefinition(BIG_TURBINE[i], () -> ModelBigTurbine.createLayer(stage));
 		}
 	}
 
 	@SubscribeEvent
-	public static void renderers(net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) {
+	public static void renderers(EntityRenderersEvent.RegisterRenderers e) {
 		FusionRenderers.registerRenderers(e);
-		e.registerEntityRenderer(reika.reactorcraft.registry.ReactorEntities.RADIATION.get(), reika.reactorcraft.client.RadiationRenderer::new);
-		e.registerEntityRenderer(reika.reactorcraft.registry.ReactorEntities.NUCLEAR_WASTE.get(), net.minecraft.client.renderer.entity.ItemEntityRenderer::new);
-		e.registerEntityRenderer(reika.reactorcraft.registry.ReactorEntities.NEUTRON.get(), reika.reactorcraft.client.NeutronRenderer::new);
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.HEAVY_PUMP.get(), ctx -> new reika.rotarycraft.client.render.IORenderer<>(new HeavyPump(ctx)));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.PROCESSOR.get(), ctx -> new Processor(ctx));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.CONTROL_ROD.get(), ctx -> new ControlRod(ctx));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.STEAM_GRATE.get(), ctx -> new SteamGrate(ctx));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.CONDENSER.get(), ctx -> new Condenser(ctx));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.STEAM_DIFFUSER.get(), ctx -> new reika.rotarycraft.client.render.IORenderer<>(new SteamDiffuser(ctx)));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.PRESSURIZER.get(), ctx -> new reika.rotarycraft.client.render.IORenderer<>(new Pressurizer(ctx)));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.WASTE_PIPE.get(), reika.rotarycraft.client.render.PipeFluidRenderer::new);
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.GAS_DUCT.get(), reika.rotarycraft.client.render.PipeFluidRenderer::new);
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.HEAT_EXCHANGER.get(), ctx -> new reika.rotarycraft.client.render.IORenderer<>(new HeatExchanger(ctx)));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.WASTE_STORAGE.get(), ctx -> new WasteStorage(ctx));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.TURBINE_CORE.get(), ctx -> new reika.rotarycraft.client.render.IORenderer<>(new TurbineCore<>(ctx, false)));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.HIP_TURBINE.get(), ctx -> new reika.rotarycraft.client.render.IORenderer<>(new TurbineCore<>(ctx, true)));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.GENERATOR.get(), ctx -> new Generator(ctx));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.FLYWHEEL.get(), ctx -> new reika.rotarycraft.client.render.IORenderer<>(new Flywheel(ctx)));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.ELECTROLYZER.get(), ctx -> new Electrolyzer(ctx));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.SOLAR_EXCHANGER.get(), ctx -> new reika.rotarycraft.client.render.IORenderer<>(new SolarExchanger(ctx)));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.SOLAR_TOP.get(), ctx -> new SolarTop(ctx));
-		e.registerBlockEntityRenderer(reika.reactorcraft.registry.ReactorBlockEntities.ISO_CENTRIFUGE.get(), ctx -> new reika.rotarycraft.client.render.IORenderer<>(new IsoCentrifuge(ctx)));
+		e.registerEntityRenderer(ReactorEntities.RADIATION.get(), RadiationRenderer::new);
+		e.registerEntityRenderer(ReactorEntities.NUCLEAR_WASTE.get(), ItemEntityRenderer::new);
+		e.registerEntityRenderer(ReactorEntities.NEUTRON.get(), NeutronRenderer::new);
+		e.registerBlockEntityRenderer(ReactorBlockEntities.HEAVY_PUMP.get(), ctx -> new IORenderer<>(new HeavyPump(ctx)));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.PROCESSOR.get(), ctx -> new Processor(ctx));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.CONTROL_ROD.get(), ctx -> new ControlRod(ctx));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.STEAM_GRATE.get(), ctx -> new SteamGrate(ctx));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.CONDENSER.get(), ctx -> new Condenser(ctx));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.STEAM_DIFFUSER.get(), ctx -> new IORenderer<>(new SteamDiffuser(ctx)));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.PRESSURIZER.get(), ctx -> new IORenderer<>(new Pressurizer(ctx)));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.WASTE_PIPE.get(), PipeFluidRenderer::new);
+		e.registerBlockEntityRenderer(ReactorBlockEntities.GAS_DUCT.get(), PipeFluidRenderer::new);
+		e.registerBlockEntityRenderer(ReactorBlockEntities.HEAT_EXCHANGER.get(), ctx -> new IORenderer<>(new HeatExchanger(ctx)));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.WASTE_STORAGE.get(), ctx -> new WasteStorage(ctx));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.TURBINE_CORE.get(), ctx -> new IORenderer<>(new TurbineCore<>(ctx, false)));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.HIP_TURBINE.get(), ctx -> new IORenderer<>(new TurbineCore<>(ctx, true)));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.GENERATOR.get(), ctx -> new Generator(ctx));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.FLYWHEEL.get(), ctx -> new IORenderer<>(new Flywheel(ctx)));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.ELECTROLYZER.get(), ctx -> new Electrolyzer(ctx));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.SOLAR_EXCHANGER.get(), ctx -> new IORenderer<>(new SolarExchanger(ctx)));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.SOLAR_TOP.get(), ctx -> new SolarTop(ctx));
+		e.registerBlockEntityRenderer(ReactorBlockEntities.ISO_CENTRIFUGE.get(), ctx -> new IORenderer<>(new IsoCentrifuge(ctx)));
 	}
 
 	/** Original RenderHeavyPump: the model with the impeller turning by -phi. */
-	static final class HeavyPump implements net.minecraft.client.renderer.blockentity.BlockEntityRenderer<reika.reactorcraft.content.blockentity.HeavyPumpBlockEntity> {
-		private final reika.reactorcraft.client.model.ModelHeavyPump model;
+	static final class HeavyPump implements BlockEntityRenderer<HeavyPumpBlockEntity> {
+		private final ModelHeavyPump model;
 
-		HeavyPump(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context ctx) {
-			model = new reika.reactorcraft.client.model.ModelHeavyPump(ctx.bakeLayer(HEAVY_PUMP));
+		HeavyPump(BlockEntityRendererProvider.Context ctx) {
+			model = new ModelHeavyPump(ctx.bakeLayer(HEAVY_PUMP));
 		}
 
 		@Override
-		public void render(reika.reactorcraft.content.blockentity.HeavyPumpBlockEntity tile, float partial, com.mojang.blaze3d.vertex.PoseStack pose,
-				net.minecraft.client.renderer.MultiBufferSource buf, int light, int overlay) {
+		public void render(HeavyPumpBlockEntity tile, float partial, PoseStack pose,
+				MultiBufferSource buf, int light, int overlay) {
 			pose.pushPose();
 			pose.translate(0, 2.0F, 1.0F);
 			pose.scale(1.0F, -1.0F, -1.0F);
 			pose.translate(0.5F, 0.5F, 0.5F);
-			model.renderAll(pose, buf.getBuffer(net.minecraft.client.renderer.RenderType.entityCutout(tex("heavypump.png"))), light, overlay, tile, null, -tile.phi, 0);
+			model.renderAll(pose, buf.getBuffer(RenderType.entityCutout(tex("heavypump.png"))), light, overlay, tile, null, -tile.phi, 0);
 			pose.popPose();
 		}
 	}
@@ -710,39 +797,39 @@ public final class ReactorClient {
 	@SubscribeEvent
 	public static void extensions(RegisterClientExtensionsEvent e) {
 		//original PotionRadiation had no status icon
-		e.registerMobEffect(new net.neoforged.neoforge.client.extensions.common.IClientMobEffectExtensions() {
+		e.registerMobEffect(new IClientMobEffectExtensions() {
 			@Override
-			public boolean renderInventoryIcon(net.minecraft.world.effect.MobEffectInstance instance, net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen<?> screen,
-					net.minecraft.client.gui.GuiGraphics g, int x, int y, int blitOffset) {
+			public boolean renderInventoryIcon(MobEffectInstance instance, EffectRenderingInventoryScreen<?> screen,
+					GuiGraphics g, int x, int y, int blitOffset) {
 				return true;
 			}
 
 			@Override
-			public boolean renderGuiIcon(net.minecraft.world.effect.MobEffectInstance instance, net.minecraft.client.gui.Gui gui, net.minecraft.client.gui.GuiGraphics g,
+			public boolean renderGuiIcon(MobEffectInstance instance, Gui gui, GuiGraphics g,
 					int x, int y, float z, float alpha) {
 				return true;
 			}
-		}, reika.reactorcraft.registry.ReactorEffects.RADIATION.value());
-		reika.rotarycraft.client.MachineItemRenderer[] r = new reika.rotarycraft.client.MachineItemRenderer[1];
-		e.registerItem(new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
+		}, ReactorEffects.RADIATION.value());
+		MachineItemRenderer[] r = new MachineItemRenderer[1];
+		e.registerItem(new IClientItemExtensions() {
 			@Override
-			public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {
+			public BlockEntityWithoutLevelRenderer getCustomRenderer() {
 				if (r[0] == null)
-					r[0] = new reika.rotarycraft.client.MachineItemRenderer();
+					r[0] = new MachineItemRenderer();
 				return r[0];
 			}
-		}, reika.reactorcraft.registry.ReactorBlocks.FLUID_EXTRACTOR.get().asItem(), reika.reactorcraft.registry.ReactorBlocks.PROCESSOR.get().asItem(),
-				reika.reactorcraft.registry.ReactorBlocks.ISO_CENTRIFUGE.get().asItem(), reika.reactorcraft.registry.ReactorBlocks.CONTROL_ROD.get().asItem(),
-				reika.reactorcraft.registry.ReactorBlocks.STEAM_GRATE.get().asItem(), reika.reactorcraft.registry.ReactorBlocks.TURBINE_CORE.get().asItem(),
-				reika.reactorcraft.registry.ReactorBlocks.CONDENSER.get().asItem(), reika.reactorcraft.registry.ReactorBlocks.WASTE_STORAGE.get().asItem(),
-				reika.reactorcraft.registry.ReactorBlocks.STEAM_DIFFUSER.get().asItem(), reika.reactorcraft.registry.ReactorBlocks.PRESSURIZER.get().asItem(),
-				reika.reactorcraft.registry.ReactorBlocks.HEAT_EXCHANGER.get().asItem(),
-				reika.reactorcraft.registry.ReactorBlocks.HIP_TURBINE.get().asItem(), reika.reactorcraft.registry.ReactorBlocks.GENERATOR.get().asItem(),
-				reika.reactorcraft.registry.ReactorBlocks.FLYWHEEL.get().asItem(), reika.reactorcraft.registry.ReactorBlocks.SOLAR_EXCHANGER.get().asItem(),
-				reika.reactorcraft.registry.ReactorBlocks.SOLAR_TOP.get().asItem(), reika.reactorcraft.registry.ReactorBlocks.ELECTROLYZER.get().asItem(),
+		}, ReactorBlocks.FLUID_EXTRACTOR.get().asItem(), ReactorBlocks.PROCESSOR.get().asItem(),
+				ReactorBlocks.ISO_CENTRIFUGE.get().asItem(), ReactorBlocks.CONTROL_ROD.get().asItem(),
+				ReactorBlocks.STEAM_GRATE.get().asItem(), ReactorBlocks.TURBINE_CORE.get().asItem(),
+				ReactorBlocks.CONDENSER.get().asItem(), ReactorBlocks.WASTE_STORAGE.get().asItem(),
+				ReactorBlocks.STEAM_DIFFUSER.get().asItem(), ReactorBlocks.PRESSURIZER.get().asItem(),
+				ReactorBlocks.HEAT_EXCHANGER.get().asItem(),
+				ReactorBlocks.HIP_TURBINE.get().asItem(), ReactorBlocks.GENERATOR.get().asItem(),
+				ReactorBlocks.FLYWHEEL.get().asItem(), ReactorBlocks.SOLAR_EXCHANGER.get().asItem(),
+				ReactorBlocks.SOLAR_TOP.get().asItem(), ReactorBlocks.ELECTROLYZER.get().asItem(),
 				//the fusion machines' item models are builtin/entity too: without this they were drawn as nothing
-				reika.reactorcraft.registry.ReactorBlocks.TOROID_MAGNET.get().asItem(), reika.reactorcraft.registry.ReactorBlocks.SOLENOID.get().asItem(),
-				reika.reactorcraft.registry.ReactorBlocks.GAS_COLLECTOR.get().asItem(), reika.reactorcraft.registry.ReactorBlocks.FUSION_MARKER.get().asItem());
+				ReactorBlocks.TOROID_MAGNET.get().asItem(), ReactorBlocks.SOLENOID.get().asItem(),
+				ReactorBlocks.GAS_COLLECTOR.get().asItem(), ReactorBlocks.FUSION_MARKER.get().asItem());
 		for (ReactorFluids.Def d : ReactorFluids.DEFS.values()) {
 			boolean water = d.texture() == null;
 			ResourceLocation still = water ? ResourceLocation.withDefaultNamespace("block/water_still") : ResourceLocation.fromNamespaceAndPath(ReactorCraft.MOD_ID, "block/fluid/"+d.texture());

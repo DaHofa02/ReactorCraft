@@ -18,13 +18,20 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import reika.reactorcraft.ReactorCraft;
 import reika.reactorcraft.content.entity.NeutronEntity;
 import reika.reactorcraft.content.item.FuelItem;
+import reika.reactorcraft.powergen.HeatExchangerBlockEntity;
 import reika.reactorcraft.reactor.BreederCoreBlockEntity;
 import reika.reactorcraft.reactor.FuelRodBlockEntity;
+import reika.reactorcraft.reactor.ReactorBoilerBlockEntity;
+import reika.reactorcraft.reactor.ReactorType;
 import reika.reactorcraft.reactor.SodiumHeaterBlockEntity;
 import reika.reactorcraft.registry.ReactorBlocks;
 import reika.reactorcraft.registry.ReactorComponents;
 import reika.reactorcraft.registry.ReactorFluids;
 import reika.reactorcraft.registry.ReactorItems;
+
+import reika.rotarycraft.content.blockentity.BevelGearBlockEntity;
+import reika.rotarycraft.content.blockentity.engine.EngineBlockEntity;
+import reika.rotarycraft.registry.RotaryBlocks;
 
 @GameTestHolder(ReactorCraft.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -94,25 +101,25 @@ public class BreederTests {
 	 */
 	@GameTest(template = PLATFORM, timeoutTicks = 300)
 	public static void heatExchangerHeatsBoiler(GameTestHelper h) {
-		h.setBlock(new BlockPos(5, 1, 4), reika.rotarycraft.registry.RotaryBlocks.GAS_ENGINE.get());
-		var eng = (reika.rotarycraft.content.blockentity.engine.EngineBlockEntity)h.getBlockEntity(new BlockPos(5, 1, 4));
+		h.setBlock(new BlockPos(5, 1, 4), RotaryBlocks.GAS_ENGINE.get());
+		var eng = (EngineBlockEntity)h.getBlockEntity(new BlockPos(5, 1, 4));
 		eng.setBlockMetadata(0);
 		eng.addFuel(50000);
-		h.setBlock(new BlockPos(4, 1, 4), reika.rotarycraft.registry.RotaryBlocks.BEVEL_GEARS.get());
-		var bev = (reika.rotarycraft.content.blockentity.BevelGearBlockEntity)h.getBlockEntity(new BlockPos(4, 1, 4));
-		bev.direction = reika.rotarycraft.content.blockentity.BevelGearBlockEntity.getDirectionMap().indexOf(
-				new reika.rotarycraft.content.blockentity.BevelGearBlockEntity.IOPair(Direction.EAST, Direction.UP));
+		h.setBlock(new BlockPos(4, 1, 4), RotaryBlocks.BEVEL_GEARS.get());
+		var bev = (BevelGearBlockEntity)h.getBlockEntity(new BlockPos(4, 1, 4));
+		bev.direction = BevelGearBlockEntity.getDirectionMap().indexOf(
+				new BevelGearBlockEntity.IOPair(Direction.EAST, Direction.UP));
 		h.setBlock(new BlockPos(4, 2, 4), ReactorBlocks.HEAT_EXCHANGER.get());
-		var ex = (reika.reactorcraft.powergen.HeatExchangerBlockEntity)h.getBlockEntity(new BlockPos(4, 2, 4));
+		var ex = (HeatExchangerBlockEntity)h.getBlockEntity(new BlockPos(4, 2, 4));
 		ex.fill(Direction.UP, new FluidStack(ReactorFluids.get("hot_sodium"), 2000), IFluidHandler.FluidAction.EXECUTE);
 		h.setBlock(new BlockPos(3, 2, 4), ReactorBlocks.BOILER.get());
-		var boiler = (reika.reactorcraft.reactor.ReactorBoilerBlockEntity)h.getBlockEntity(new BlockPos(3, 2, 4));
+		var boiler = (ReactorBoilerBlockEntity)h.getBlockEntity(new BlockPos(3, 2, 4));
 		int b0 = boiler.getTemperature();
 		h.succeedWhen(() -> {
 			h.assertTrue(ex.sufficientPower(), "exchanger power "+ex.getPower()+" W @ "+ex.getOmega()+" rad/s");
 			h.assertTrue(ex.getOutputTank().getFluid().getFluid().isSame(ReactorFluids.get("sodium")) && ex.getOutputTank().getFluidAmount() >= 100, "no cold sodium");
 			h.assertTrue(boiler.getTemperature() > b0+20, "boiler at "+boiler.getTemperature()+" C (exchanger "+ex.getTemperature()+" C)");
-			h.assertTrue(boiler.getReactorTypeFractions().getOrDefault(reika.reactorcraft.reactor.ReactorType.BREEDER, 0D) > 0, "heat not counted as breeder");
+			h.assertTrue(boiler.getReactorTypeFractions().getOrDefault(ReactorType.BREEDER, 0D) > 0, "heat not counted as breeder");
 		});
 	}
 }

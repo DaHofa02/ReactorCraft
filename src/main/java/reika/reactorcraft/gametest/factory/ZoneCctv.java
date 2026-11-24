@@ -9,6 +9,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -18,6 +20,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 import reika.reactorcraft.ReactorCraft;
 import reika.rotarycraft.content.blockentity.CctvBlockEntity;
+import reika.rotarycraft.content.blockentity.ScreenBlockEntity;
 import reika.rotarycraft.content.item.CoilItem;
 import reika.rotarycraft.gametest.SimPlayer;
 import reika.rotarycraft.registry.RotaryBlocks;
@@ -54,7 +57,7 @@ public class ZoneCctv {
 		Factory.take(p, chest, RotaryBlocks.CCTV.get().asItem(), 1);
 		Factory.takeExactly(p, chest, Items.DIRT, 2);
 		Factory.takeExactly(p, chest, Items.IRON_SHOVEL, 1);
-		for (net.minecraft.world.item.Item d : new net.minecraft.world.item.Item[] {Items.RED_DYE, Items.GREEN_DYE, Items.BLUE_DYE})
+		for (Item d : new Item[] {Items.RED_DYE, Items.GREEN_DYE, Items.BLUE_DYE})
 			Factory.takeExactly(p, chest, d, 2);
 		Factory.take(p, chest, spring, 1);
 		Factory.take(p, chest, RotaryItems.SCREWDRIVER.get(), 1);
@@ -86,7 +89,7 @@ public class ZoneCctv {
 		h.succeedWhen(() -> {
 			h.assertTrue(te.isOn(), "CCTV not running");
 			//retried each tick: the screen only calls up the camera once its engine has spun up
-			p.player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+			p.player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
 			p.player.setShiftKeyDown(true);
 			try {
 				p.use(screen);
@@ -94,7 +97,7 @@ public class ZoneCctv {
 			finally {
 				p.player.setShiftKeyDown(false);
 			}
-			var sc = (reika.rotarycraft.content.blockentity.ScreenBlockEntity)h.getBlockEntity(screen);
+			var sc = (ScreenBlockEntity)h.getBlockEntity(screen);
 			h.assertTrue(te.views >= 1, "view not called up: screen "+sc.getPower()+" W, runs "+sc.canRun()+", camera "+sc.findCamera());
 			Factory.assertBuilt(h, BLOCKS, new BlockPos(0, 2, 0), new BlockPos(8, 4, 8));
 			p.leave();

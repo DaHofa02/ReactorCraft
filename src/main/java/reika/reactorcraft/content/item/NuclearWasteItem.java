@@ -21,6 +21,7 @@ import reika.reactorcraft.radiation.Isotopes;
 import reika.reactorcraft.radiation.RadiationEffects;
 import reika.reactorcraft.radiation.RadiationIntensity;
 import reika.reactorcraft.registry.ReactorComponents;
+import reika.reactorcraft.registry.ReactorItems;
 
 /**
  * Original: ItemNuclearWaste - irradiates whoever carries it (high level), drops as a never-despawning radioactive item entity, and
@@ -68,7 +69,7 @@ public class NuclearWasteItem extends Item {
 	}
 
 	public static ItemStack of(Isotopes atom) {
-		ItemStack is = new ItemStack(reika.reactorcraft.registry.ReactorItems.WASTE.get());
+		ItemStack is = new ItemStack(ReactorItems.WASTE.get());
 		is.set(ReactorComponents.ISOTOPE.get(), atom.ordinal());
 		return is;
 	}

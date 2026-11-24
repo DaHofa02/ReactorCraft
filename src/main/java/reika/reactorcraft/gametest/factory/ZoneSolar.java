@@ -22,6 +22,7 @@ import reika.reactorcraft.ReactorCraft;
 import reika.reactorcraft.powergen.SolarTopBlockEntity;
 import reika.reactorcraft.registry.ReactorBlocks;
 import reika.rotarycraft.content.blockentity.DynamometerBlockEntity;
+import reika.rotarycraft.content.blockentity.SolarTowerBlockEntity;
 import reika.rotarycraft.gametest.SimPlayer;
 import reika.rotarycraft.lib.world.AmbientTemperature;
 import reika.rotarycraft.registry.RotaryBlocks;
@@ -84,7 +85,7 @@ public class ZoneSolar {
 	}
 
 	private static String tw(GameTestHelper h, BlockPos foot) {
-		var t = (reika.rotarycraft.content.blockentity.SolarTowerBlockEntity)h.getBlockEntity(foot);
+		var t = (SolarTowerBlockEntity)h.getBlockEntity(foot);
 		var pl = t.getPlant();
 		return t.getOmega()+"@"+t.getTorque()+" plant "+(pl == null ? "none" : pl.mirrorCount()+"m/"+pl.towerCount()+"t x"+pl.getTowerMultiplier())+" use "+t.getCurrentConsumption();
 	}

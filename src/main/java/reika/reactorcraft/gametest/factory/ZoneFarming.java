@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -55,7 +56,7 @@ public class ZoneFarming {
 		}
 	}
 
-	private static int countAround(GameTestHelper h, SimPlayer p, net.minecraft.world.item.Item item) {
+	private static int countAround(GameTestHelper h, SimPlayer p, Item item) {
 		int n = p.count(item);
 		for (ItemEntity e : h.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(h.absolutePos(new BlockPos(4, 2, 4))).inflate(12)))
 			if (e.getItem().is(item))

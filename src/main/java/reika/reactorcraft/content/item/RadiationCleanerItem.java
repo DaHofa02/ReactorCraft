@@ -26,6 +26,8 @@ import net.minecraft.world.phys.Vec3;
 import reika.reactorcraft.content.entity.RadiationEntity;
 import reika.reactorcraft.registry.ReactorComponents;
 
+import reika.rotarycraft.api.interfaces.ChargeableTool;
+
 /**
  * Original: Reika.ReactorCraft.Items.ItemRadiationCleaner (ChargeableTool; the charge in kJ was the item damage, here a component) -
  * right-clicking a water source within 5 blocks takes it in (1000 mB, up to 32000); otherwise it sprays while held (like drawing a
@@ -34,7 +36,7 @@ import reika.reactorcraft.registry.ReactorComponents;
  * creative); like the original, holding it until the use time runs out costs nothing. Charged in the RotaryCraft worktable with a
  * wound coil (not ported yet; creative has a charged, full one).
  */
-public class RadiationCleanerItem extends Item implements reika.rotarycraft.api.interfaces.ChargeableTool {
+public class RadiationCleanerItem extends Item implements ChargeableTool {
 
 	public static final int CAPACITY = 32000;
 	public static final int CREATIVE_CHARGE = 32000;

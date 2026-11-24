@@ -16,6 +16,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import reika.reactorcraft.ReactorCraft;
+import reika.reactorcraft.content.menu.CpuMenu;
 import reika.reactorcraft.reactor.ControlRodBlockEntity;
 import reika.reactorcraft.reactor.CpuBlockEntity;
 
@@ -51,7 +52,7 @@ public final class ReactorPayloads {
 		if (!(sp.level().getBlockEntity(msg.pos()) instanceof CpuBlockEntity te))
 			return;
 		//in reach, or the GUI was opened with the CPU remote control
-		if (!te.isPlayerAccessible(sp) && !(sp.containerMenu instanceof reika.reactorcraft.content.menu.CpuMenu m && m.tile == te))
+		if (!te.isPlayerAccessible(sp) && !(sp.containerMenu instanceof CpuMenu m && m.tile == te))
 			return;
 		if (msg.action() < 0 || msg.action() >= CpuAction.values().length)
 			return;

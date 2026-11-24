@@ -11,6 +11,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -99,7 +100,7 @@ public class RadiationEntity extends Entity {
 
 	@Override
 	public boolean hurt(DamageSource src, float amount) {
-		if (src.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) && !level().isClientSide) {
+		if (src.is(DamageTypeTags.IS_EXPLOSION) && !level().isClientSide) {
 			RadiationEffects.contaminateArea(level(), this.blockPosition(), this.getRange(), 0.65F, 0.5, true, intensity);
 			this.discard();
 			return true;

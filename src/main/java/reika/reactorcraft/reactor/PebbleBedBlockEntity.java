@@ -17,6 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Clearable;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -43,7 +44,7 @@ import reika.rotarycraft.lib.world.AmbientTemperature;
  * of the difference with beds beside it. From 1200 C it gets damaged (more often the hotter and smaller the reactor; it recovers
  * 1 in 800 ticks); 100 damage or 4400 C melt it into lava.
  */
-public class PebbleBedBlockEntity extends ReactorBlockEntity implements Temperatured, ReactorTyped, ReactorBlock, Feedable, net.minecraft.world.Clearable {
+public class PebbleBedBlockEntity extends ReactorBlockEntity implements Temperatured, ReactorTyped, ReactorBlock, Feedable, Clearable {
 
 	public static final int MINTEMP = 800;
 	public static final int OVERTEMP = 1200;

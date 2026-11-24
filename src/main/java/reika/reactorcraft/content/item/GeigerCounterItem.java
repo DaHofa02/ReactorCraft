@@ -20,12 +20,14 @@ import reika.reactorcraft.content.entity.RadiationEntity;
 import reika.reactorcraft.registry.ReactorComponents;
 import reika.reactorcraft.registry.ReactorEffects;
 
+import reika.rotarycraft.api.interfaces.ChargeableTool;
+
 /**
  * Original: ItemGeigerCounter (ChargeableTool; the charge in kJ was the item damage, here a component) - held and charged it clicks:
  * constantly while its holder has radiation sickness, otherwise for the nearest radiation cloud within 20 blocks more often the closer
  * it is; every tick it uses one kJ with 1 in 8. Charged in the RotaryCraft coil winder (not ported yet; creative has a charged one).
  */
-public class GeigerCounterItem extends Item implements reika.rotarycraft.api.interfaces.ChargeableTool {
+public class GeigerCounterItem extends Item implements ChargeableTool {
 
 	public static final int CREATIVE_CHARGE = 32000;
 

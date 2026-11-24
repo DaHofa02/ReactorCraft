@@ -3,8 +3,11 @@
  ******************************************************************************/
 package reika.reactorcraft.reactor;
 
+import java.util.ArrayDeque;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -36,6 +39,7 @@ import reika.reactorcraft.powergen.SteamTile;
 import reika.reactorcraft.powergen.WorkingFluid;
 import reika.reactorcraft.registry.ReactorBlockEntities;
 import reika.reactorcraft.registry.ReactorFluids;
+import reika.rotarycraft.content.item.CraftingPart;
 import reika.rotarycraft.content.piping.PipeConnector;
 import reika.rotarycraft.content.piping.PipeType;
 import reika.rotarycraft.lib.math.RandomHelper;
@@ -189,8 +193,8 @@ public class ReactorBoilerBlockEntity extends ReactorBlockEntity implements Temp
 	}
 
 	private void detonateAmmonia(ServerLevel world, BlockPos pos) {
-		java.util.Set<BlockPos> pipes = new java.util.HashSet<>();
-		java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+		Set<BlockPos> pipes = new HashSet<>();
+		ArrayDeque<BlockPos> queue = new ArrayDeque<>();
 		if (world.getBlockEntity(pos.above()) instanceof SteamLineBlockEntity) {
 			queue.add(pos.above());
 			pipes.add(pos.above());
@@ -211,7 +215,7 @@ public class ReactorBoilerBlockEntity extends ReactorBlockEntity implements Temp
 			Containers.dropItemStack(world, c.getX(), c.getY(), c.getZ(), new ItemStack(Items.NETHER_BRICK));
 		}
 		world.removeBlock(pos, false);
-		Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(RotaryItems.part(reika.rotarycraft.content.item.CraftingPart.SCRAP), 8+rand.nextInt(18)));
+		Containers.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(RotaryItems.part(CraftingPart.SCRAP), 8+rand.nextInt(18)));
 		world.sendParticles(ParticleTypes.EXPLOSION, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, 1, 0, 0, 0, 0);
 		world.playSound(null, pos, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 1.2F, 1);
 		boolean flag = false;
@@ -231,7 +235,7 @@ public class ReactorBoilerBlockEntity extends ReactorBlockEntity implements Temp
 		world.explode(null, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, 8, true, Level.ExplosionInteraction.BLOCK);
 		for (int i = 0; i < 4; i++)
 			Containers.dropItemStack(world, pos.getX()+rand.nextDouble(), pos.getY()+rand.nextDouble(), pos.getZ()+rand.nextDouble(),
-					new ItemStack(RotaryItems.part(reika.rotarycraft.content.item.CraftingPart.SCRAP)));
+					new ItemStack(RotaryItems.part(CraftingPart.SCRAP)));
 	}
 
 	public int removeSteam() {

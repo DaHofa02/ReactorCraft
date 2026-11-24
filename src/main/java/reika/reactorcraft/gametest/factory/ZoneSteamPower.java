@@ -7,10 +7,13 @@ package reika.reactorcraft.gametest.factory;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,6 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.PipeBlock;
 import net.minecraft.world.level.material.Fluids;
 
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -33,6 +37,7 @@ import reika.electricraft.network.ElectriPayloads;
 import reika.electricraft.registry.ElectriBlocks;
 import reika.reactorcraft.ReactorCraft;
 import reika.reactorcraft.content.block.SteamBlock;
+import reika.reactorcraft.content.block.TurbineMultiBlock;
 import reika.reactorcraft.powergen.CondenserBlockEntity;
 import reika.reactorcraft.powergen.HeatExchangerBlockEntity;
 import reika.reactorcraft.powergen.HiPTurbineBlockEntity;
@@ -51,6 +56,7 @@ import reika.reactorcraft.registry.ReactorFluids;
 import reika.rotarycraft.content.blockentity.DynamometerBlockEntity;
 import reika.rotarycraft.content.blockentity.SolarTowerBlockEntity;
 import reika.rotarycraft.gametest.SimPlayer;
+import reika.rotarycraft.lib.world.AmbientTemperature;
 import reika.rotarycraft.registry.RotaryBlocks;
 import reika.rotarycraft.registry.RotaryFluids;
 
@@ -76,7 +82,7 @@ public class ZoneSteamPower {
 	public static final List<String> BLOCKS;
 
 	static {
-		java.util.Set<String> li = new java.util.LinkedHashSet<>(PLANT);
+		Set<String> li = new LinkedHashSet<>(PLANT);
 		li.addAll(RF_PLANT);
 		li.addAll(MECH_PLANT);
 		BLOCKS = List.copyOf(li);
@@ -194,7 +200,7 @@ public class ZoneSteamPower {
 		Factory.take(p, chest, RotaryBlocks.MIRROR.get().asItem(), mirrors.size());
 		for (BlockPos m : mirrors)
 			p.placeSneaking(m, new ItemStack(RotaryBlocks.MIRROR.get()), Direction.EAST);
-		int amb = reika.rotarycraft.lib.world.AmbientTemperature.getAmbientTemperatureAt(h.getLevel(), h.absolutePos(boiler));
+		int amb = AmbientTemperature.getAmbientTemperatureAt(h.getLevel(), h.absolutePos(boiler));
 		return new Plant(tower, ex, hx, boiler, grate, amb);
 	}
 
@@ -397,7 +403,7 @@ public class ZoneSteamPower {
 					+", boiler "+boiler.getTemperature()+" C (peak "+peak[2]+", ambient "+plant.ambient()+") water "+boiler.getTank().getFluidAmount()
 					+", grate "+grate.getSteam()+" (steam seen "+peak[5]+"), turbine "+t0.getRawOmega()+"/"+t4.getOmega()+" rad/s "+t4.getPower()+" W lube "+t0.getLubricant()
 					+", generator "+gen.getPower()+" W (peak "+peak[4]+" RF/t), cable limit "+cable.getRFLimit()+", batteries "+b1.getStoredEnergy()+"/"+b2.getStoredEnergy()
-					+", condenser "+cd.getTank().getFluidAmount()+", meter "+tm.getTurbinePos()+", times "+java.util.Arrays.toString(when);
+					+", condenser "+cd.getTank().getFluidAmount()+", meter "+tm.getTurbinePos()+", times "+Arrays.toString(when);
 			h.assertTrue(peak[0] >= 800 && cooled[0], "solar loop: "+state);
 			h.assertTrue(peak[5] > 0 && peak[2] > 100, "no steam yet: "+state);
 			h.assertTrue(peak[3] > 0 && peak[4] > 0, "turbine/generator: "+state);
@@ -464,7 +470,7 @@ public class ZoneSteamPower {
 		BlockPos hip = new BlockPos(17, Y, 30), inlet = hip.east(2);
 		Map<BlockPos, Block> hp = new LinkedHashMap<>();
 		for (int i = 5; i <= 7; i++) {
-			String[] rows = reika.reactorcraft.content.block.TurbineMultiBlock.SLICES[i];
+			String[] rows = TurbineMultiBlock.SLICES[i];
 			for (int c = 0; c < rows[0].length(); c++)
 				for (int k = 0; k < rows.length; k++) {
 					char ch = rows[k].charAt(c);
@@ -525,14 +531,14 @@ public class ZoneSteamPower {
 					+"), flywheel "+(fly.hasMultiBlock() ? "formed" : "not formed")+" facing "+fly.getFacing()+" "+fly.getOmega()+" (peak "+peak[2]+"), dynamometer peak "
 					+peak[3]+" rad/s "+peak[4]+" Nm, diffuser "+df.getSteam()+" / "+df.getTank().getFluidAmount()+" mB, HiP "+(hipCore.hasMultiBlock() ? "formed" : "not formed")
 					+" stages "+hipCore.getNumberStagesTotal()+" lube "+hipCore.getLubricant()+" steam "+hipCore.getSteam()+" omega "+hipCore.getRawOmega()
-					+", inlet line peak "+peak[5]+", times "+java.util.Arrays.toString(when);
+					+", inlet line peak "+peak[5]+", times "+Arrays.toString(when);
 			h.assertTrue(fly.hasMultiBlock() && hipCore.hasMultiBlock() && hipCore.getNumberStagesTotal() == 2, "multiblocks: "+state);
 			h.assertTrue(peak[0] > 0 && peak[1] > 0, "no steam turbine run yet: "+state);
 			h.assertTrue(peak[2] > 0 && peak[3] > 0 && peak[4] > 0, "flywheel/dynamometer: "+state);
 			//the plant's boiler makes about one unit of steam per tick near 100 C and the line passes it on whole: whether the grate or the
 			//diffuser draws it first depends on the tick order, which is fixed for a run and changes with the test's position. So here only
 			//the setup is checked (the line joins the diffuser, which faces it); converting steam is DiffuserTests' job
-			h.assertTrue(h.getBlockState(lastLine).getValue(net.minecraft.world.level.block.PipeBlock.NORTH) && df.getFacing() == Direction.SOUTH,
+			h.assertTrue(h.getBlockState(lastLine).getValue(PipeBlock.NORTH) && df.getFacing() == Direction.SOUTH,
 					"diffuser not joined to the steam line: facing "+df.getFacing()+", line "+h.getBlockState(lastLine)+"; "+state);
 			h.assertTrue(hipCore.getLubricant() > 0, "HiP lubricant: "+state);
 			List<String> blocks = new ArrayList<>(PLANT);
